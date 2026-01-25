@@ -38,7 +38,7 @@ import {
 } from 'lucide-react';
 
 export function IssueManagement() {
-  const { issues, officials, loading, assignIssue, updateIssueStatus, closeIssue } = useIssues();
+  const { issues, officials, loading, assignIssue, updateIssueStatus, closeIssue, refetch } = useIssues();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -46,6 +46,13 @@ export function IssueManagement() {
   const [isClosing, setIsClosing] = useState(false);
   const [closureNote, setClosureNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+  };
 
   const filteredIssues = issues.filter(issue => {
     const matchesSearch = 
@@ -100,9 +107,24 @@ export function IssueManagement() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">Issue Management</h1>
-        <p className="text-muted-foreground">Manage and resolve civic issues</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-3xl font-bold text-foreground">Issue Management</h1>
+          <p className="text-muted-foreground">Manage and resolve civic issues</p>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+        >
+          {isRefreshing ? (
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mr-2" />
+          ) : (
+            <Clock className="w-4 h-4 mr-2" />
+          )}
+          Refresh
+        </Button>
       </div>
 
       {/* Filters */}
@@ -282,6 +304,7 @@ export function IssueManagement() {
                               <SelectItem value="reported">Reported</SelectItem>
                               <SelectItem value="assigned">Assigned</SelectItem>
                               <SelectItem value="in_progress">In Progress</SelectItem>
+                              <SelectItem value="escalated">Escalated</SelectItem>
                             </SelectContent>
                           </Select>
 
