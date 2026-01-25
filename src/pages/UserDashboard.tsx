@@ -88,10 +88,12 @@ export default function UserDashboard() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" className="gap-2">
-                <Settings className="w-4 h-4" />
-                Settings
-              </Button>
+              <Link to="/settings">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Settings className="w-4 h-4" />
+                  Settings
+                </Button>
+              </Link>
               <Link to="/report">
                 <Button size="sm" className="gap-2 primary-gradient">
                   <Plus className="w-4 h-4" />
