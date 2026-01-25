@@ -200,17 +200,17 @@ export function ImageUpload({ onImageUploaded, currentImage }: ImageUploadProps)
             )}
           </motion.div>
         ) : (
-          <motion.label
+          <motion.div
             key="dropzone"
-            htmlFor="image-upload"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
+            onClick={() => inputRef.current?.click()}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             className={`
-              block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer
+              border-2 border-dashed rounded-xl p-8 text-center cursor-pointer
               transition-all duration-200
               ${isDragging 
                 ? 'border-primary bg-primary/10 scale-[1.02]' 
@@ -235,7 +235,7 @@ export function ImageUpload({ onImageUploaded, currentImage }: ImageUploadProps)
             <p className="text-xs text-muted-foreground">
               PNG, JPG, GIF up to 5MB
             </p>
-          </motion.label>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

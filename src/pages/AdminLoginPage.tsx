@@ -12,8 +12,8 @@ import { supabase } from '@/integrations/supabase/client';
 import logo from '@/assets/logo.png';
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('admin@civiscope.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, signUp } = useAuth();
@@ -102,7 +102,7 @@ export default function AdminLoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@civiscope.com"
+                  placeholder="Enter admin email"
                   className="bg-background/50"
                 />
               </div>
@@ -115,7 +115,7 @@ export default function AdminLoginPage() {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder="Enter password"
                     className="bg-background/50 pr-10"
                   />
                   <button
@@ -129,9 +129,8 @@ export default function AdminLoginPage() {
               </div>
 
               <div className="bg-muted/50 rounded-lg p-3 text-sm">
-                <p className="font-medium text-foreground mb-1">Default Credentials:</p>
-                <p className="text-muted-foreground">Email: admin@civiscope.com</p>
-                <p className="text-muted-foreground">Password: admin123</p>
+                <p className="font-medium text-foreground mb-1">Admin Access:</p>
+                <p className="text-muted-foreground">Enter your admin credentials to access the portal.</p>
               </div>
 
               <Button
