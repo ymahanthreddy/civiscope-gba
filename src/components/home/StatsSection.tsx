@@ -43,8 +43,48 @@ export function StatsSection() {
       
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-background to-background" />
-      <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl" />
+      
+      {/* Animated gradient orbs */}
+      <motion.div
+        animate={{ 
+          x: [0, 40, 0], 
+          y: [0, -30, 0],
+          scale: [1, 1.3, 1]
+        }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-1/3 left-[15%] w-96 h-96 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/10 blur-3xl"
+      />
+      <motion.div
+        animate={{ 
+          x: [0, -50, 0], 
+          y: [0, 40, 0],
+          scale: [1, 1.2, 1]
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute bottom-1/4 right-[20%] w-80 h-80 rounded-full bg-gradient-to-br from-violet-500/20 to-purple-500/10 blur-3xl"
+      />
+      <motion.div
+        animate={{ 
+          scale: [1, 1.4, 1],
+          opacity: [0.15, 0.25, 0.15]
+        }}
+        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 w-[400px] h-[400px] rounded-full bg-gradient-to-br from-emerald-500/15 to-green-500/10 blur-3xl"
+      />
+      
+      {/* Floating particles */}
+      {[...Array(8)].map((_, i) => (
+        <motion.div
+          key={i}
+          animate={{ 
+            y: [0, -30, 0],
+            opacity: [0.3, 0.6, 0.3]
+          }}
+          transition={{ duration: 4 + i, repeat: Infinity, ease: 'easeInOut', delay: i * 0.5 }}
+          className="absolute w-2 h-2 rounded-full bg-primary/40"
+          style={{ left: `${10 + i * 12}%`, top: `${20 + (i % 3) * 25}%` }}
+        />
+      ))}
 
       <div className="container mx-auto relative z-10">
         <motion.div
