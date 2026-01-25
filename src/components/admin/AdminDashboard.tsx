@@ -39,12 +39,8 @@ export function AdminDashboard() {
   const stats = useMemo(() => {
     const total = issues.length;
     const resolved = issues.filter(i => i.status === 'closed').length;
-    const pending = issues.filter(i => i.status !== 'closed').length;
-    const escalated = issues.filter(i => {
-      if (i.status === 'closed') return false;
-      const days = (Date.now() - new Date(i.created_at).getTime()) / (1000 * 60 * 60 * 24);
-      return days > 3;
-    }).length;
+    const pending = issues.filter(i => i.status !== 'closed' && i.status !== 'escalated').length;
+    const escalated = issues.filter(i => i.status === 'escalated').length;
 
     return { total, resolved, pending, escalated };
   }, [issues]);
