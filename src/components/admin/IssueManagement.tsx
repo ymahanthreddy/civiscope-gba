@@ -32,7 +32,8 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
-  ImagePlus
+  ImagePlus,
+  Flame
 } from 'lucide-react';
 
 export function IssueManagement() {
@@ -62,8 +63,8 @@ export function IssueManagement() {
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   };
 
-  const isEscalated = (issue: Issue) => {
-    return issue.status !== 'closed' && getDaysElapsed(issue.created_at) > 3;
+  const isOldPending = (issue: Issue) => {
+    return issue.status !== 'closed' && issue.status !== 'escalated' && getDaysElapsed(issue.created_at) > 3;
   };
 
   const handleAssign = async (issueId: string, officialName: string) => {
@@ -149,7 +150,8 @@ export function IssueManagement() {
       {/* Issues List */}
       <div className="space-y-4">
         {filteredIssues.map((issue, i) => {
-          const escalated = isEscalated(issue);
+          const isOld = isOldPending(issue);
+          const isEscalated = issue.status === 'escalated';
           const days = getDaysElapsed(issue.created_at);
           const categoryKey = issue.category as keyof typeof CATEGORY_CONFIG;
           const statusKey = issue.status as keyof typeof STATUS_CONFIG;
@@ -161,7 +163,13 @@ export function IssueManagement() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
             >
-              <Card className={`shadow-card hover:shadow-card-hover transition-all ${escalated ? 'border-2 border-destructive/50 bg-destructive/5' : ''}`}>
+              <Card className={`shadow-card hover:shadow-card-hover transition-all ${
+                isEscalated 
+                  ? 'border-2 border-destructive ring-2 ring-destructive/20 bg-destructive/5' 
+                  : isOld 
+                    ? 'border-2 border-amber-500/50 bg-amber-500/5' 
+                    : ''
+              }`}>
                 <CardContent className="p-4">
                   <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                     {/* Issue Info */}
@@ -178,10 +186,16 @@ export function IssueManagement() {
                             >
                               {STATUS_CONFIG[statusKey]?.label || issue.status}
                             </Badge>
-                            {escalated && (
-                              <Badge variant="destructive" className="animate-pulse">
+                            {isEscalated && (
+                              <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white border-0 animate-pulse">
+                                <Flame className="w-3 h-3 mr-1" />
+                                ESCALATED
+                              </Badge>
+                            )}
+                            {isOld && !isEscalated && (
+                              <Badge variant="outline" className="border-amber-500 text-amber-600">
                                 <AlertTriangle className="w-3 h-3 mr-1" />
-                                Escalated
+                                Pending {days} days
                               </Badge>
                             )}
                           </div>
@@ -200,7 +214,7 @@ export function IssueManagement() {
                           <Calendar className="w-4 h-4" />
                           {new Date(issue.created_at).toLocaleDateString('en-IN')}
                         </span>
-                        <span className={`flex items-center gap-1 ${escalated ? 'text-destructive font-medium' : ''}`}>
+                        <span className={`flex items-center gap-1 ${isEscalated ? 'text-destructive font-medium' : isOld ? 'text-amber-600 font-medium' : ''}`}>
                           <Clock className="w-4 h-4" />
                           {days} days
                         </span>
@@ -209,7 +223,19 @@ export function IssueManagement() {
 
                     {/* Actions */}
                     <div className="flex flex-col sm:flex-row gap-2 lg:w-auto">
-                      {issue.status !== 'closed' && (
+                      {/* Escalated - Show prominent message, no actions */}
+                      {isEscalated && (
+                        <div className="flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-destructive/30 rounded-lg">
+                          <Flame className="w-5 h-5 text-destructive animate-pulse" />
+                          <div>
+                            <p className="font-semibold text-destructive text-sm">Issue Escalated</p>
+                            <p className="text-xs text-destructive/70">Requires immediate attention</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Normal workflow for non-escalated, non-closed issues */}
+                      {issue.status !== 'closed' && !isEscalated && (
                         <>
                           {/* Assign Dropdown */}
                           <Select
@@ -247,7 +273,7 @@ export function IssueManagement() {
                           {/* Close Issue */}
                           <Button
                             variant="outline"
-                            className="border-success text-success hover:bg-success hover:text-success-foreground"
+                            className="border-emerald-500 text-emerald-600 hover:bg-emerald-500 hover:text-white"
                             onClick={() => {
                               setSelectedIssue(issue);
                               setIsClosing(true);
@@ -260,7 +286,7 @@ export function IssueManagement() {
                       )}
                       
                       {issue.status === 'closed' && (
-                        <div className="flex items-center gap-2 text-success">
+                        <div className="flex items-center gap-2 text-emerald-600">
                           <CheckCircle2 className="w-5 h-5" />
                           <span className="font-medium">Resolved</span>
                         </div>

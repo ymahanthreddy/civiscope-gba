@@ -2,9 +2,10 @@ import { Navigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { IssueManagement } from '@/components/admin/IssueManagement';
+import { AdminReports } from '@/components/reports/AdminReports';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutDashboard, ListTodo } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Download } from 'lucide-react';
 
 export default function AdminPage() {
   const { isAdmin, isLoading } = useAuth();
@@ -36,6 +37,10 @@ export default function AdminPage() {
               <ListTodo className="w-4 h-4" />
               Manage Issues
             </TabsTrigger>
+            <TabsTrigger value="reports" className="flex items-center gap-2">
+              <Download className="w-4 h-4" />
+              Reports
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="dashboard">
@@ -44,6 +49,10 @@ export default function AdminPage() {
           
           <TabsContent value="issues">
             <IssueManagement />
+          </TabsContent>
+
+          <TabsContent value="reports">
+            <AdminReports />
           </TabsContent>
         </Tabs>
       </div>

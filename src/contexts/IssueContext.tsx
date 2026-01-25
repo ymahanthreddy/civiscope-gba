@@ -18,6 +18,7 @@ interface IssueContextType {
   assignIssue: (id: string, officialName: string) => Promise<boolean>;
   getIssueByTrackingId: (trackingId: string) => Promise<Issue | null>;
   closeIssue: (id: string, resolutionNotes: string, resolutionImage?: string) => Promise<boolean>;
+  escalateIssue: (id: string) => Promise<boolean>;
   refetch: () => Promise<void>;
 }
 
@@ -35,6 +36,7 @@ export function IssueProvider({ children }: { children: ReactNode }) {
     updateIssueStatus,
     assignIssue,
     closeIssue,
+    escalateIssue,
     refetch,
   } = useSupabaseIssues();
 
@@ -69,6 +71,7 @@ export function IssueProvider({ children }: { children: ReactNode }) {
       assignIssue,
       getIssueByTrackingId,
       closeIssue,
+      escalateIssue,
       refetch,
     }}>
       {children}
