@@ -26,11 +26,11 @@ export default function AdminLoginPage() {
     // Try to sign in first
     let { error } = await signIn(email, password);
 
-    // If user doesn't exist, create account and assign admin role
     if (error) {
+      // Try signing up if login fails
       const signUpResult = await signUp(email, password, 'Admin');
       
-      if (signUpResult.error) {
+      if (signUpResult.error && !signUpResult.error.message.includes('already registered')) {
         toast({
           title: 'Login Failed',
           description: signUpResult.error.message || 'Please try again.',
@@ -40,30 +40,33 @@ export default function AdminLoginPage() {
         return;
       }
 
-      // Get the new user and assign admin role
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.from('user_roles').upsert({ 
-          user_id: user.id, 
-          role: 'admin' 
-        }, { onConflict: 'user_id' });
+      // Try signing in again after signup
+      const retryResult = await signIn(email, password);
+      if (retryResult.error) {
+        toast({
+          title: 'Login Failed',
+          description: 'Please try again in a moment.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
       }
+    }
 
-      toast({
-        title: 'Admin Account Created!',
-        description: 'Welcome to the admin portal.',
-      });
-      navigate('/admin');
-      setIsLoading(false);
-      return;
+    // Update the user's role to admin
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      // Update existing role to admin
+      await supabase.from('user_roles').update({ role: 'admin' }).eq('user_id', user.id);
     }
 
     toast({
       title: 'Welcome, Admin!',
       description: 'Redirecting to admin portal...',
     });
-    navigate('/admin');
-    setIsLoading(false);
+    
+    // Force reload to refresh auth context with new role
+    window.location.href = '/admin';
   };
 
   return (
