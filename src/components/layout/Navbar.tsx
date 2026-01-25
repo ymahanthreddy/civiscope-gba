@@ -12,7 +12,8 @@ import {
   Menu, 
   X,
   Sparkles,
-  User
+  User,
+  Home
 } from 'lucide-react';
 import { useState } from 'react';
 import logo from '@/assets/logo.png';
@@ -23,7 +24,7 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { to: '/', label: 'Home', icon: () => <img src={logo} alt="" className="w-4 h-4 rounded" /> },
+    { to: '/', label: 'Home', icon: Home },
     { to: '/report', label: 'Report Issue', icon: FileText },
     { to: '/track', label: 'Track Issue', icon: Search },
   ];
