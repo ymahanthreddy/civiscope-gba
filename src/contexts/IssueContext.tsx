@@ -1,4 +1,5 @@
 import React, { createContext, useContext, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
 import { useSupabaseIssues, Issue, Official, IssueStatus, IssueCategory } from '@/hooks/useSupabaseIssues';
 
 interface IssueContextType {
@@ -27,6 +28,7 @@ const IssueContext = createContext<IssueContextType | undefined>(undefined);
 export type { Issue, Official, IssueStatus, IssueCategory };
 
 export function IssueProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const {
     issues,
     officials,
@@ -58,6 +60,7 @@ export function IssueProvider({ children }: { children: ReactNode }) {
       reporter_name: issueData.reporterName,
       reporter_contact: issueData.reporterContact,
       image_url: issueData.imageUrl,
+      user_id: user?.id, // Link issue to logged-in user
     });
   };
 

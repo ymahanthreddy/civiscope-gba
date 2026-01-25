@@ -33,10 +33,10 @@ export default function UserDashboard() {
   const { issues } = useIssues();
   const issuesLoading = false; // Issues are already loaded
 
-  // Filter issues for demo - in production, filter by user_id
+  // Filter issues by current user's id
   const userIssues = useMemo(() => {
-    return issues.slice(0, 5); // Show recent issues for demo
-  }, [issues]);
+    return issues.filter(issue => issue.user_id === user?.id);
+  }, [issues, user?.id]);
 
   const stats = useMemo(() => ({
     total: userIssues.length,

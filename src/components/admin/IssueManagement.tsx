@@ -33,7 +33,8 @@ import {
   CheckCircle2,
   Clock,
   ImagePlus,
-  Flame
+  Flame,
+  Mail
 } from 'lucide-react';
 
 export function IssueManagement() {
@@ -217,6 +218,18 @@ export function IssueManagement() {
                         <span className={`flex items-center gap-1 ${isEscalated ? 'text-destructive font-medium' : isOld ? 'text-amber-600 font-medium' : ''}`}>
                           <Clock className="w-4 h-4" />
                           {days} days
+                        </span>
+                      </div>
+
+                      {/* Reporter Information */}
+                      <div className="flex flex-wrap gap-4 text-sm mt-2 pt-2 border-t border-border/50">
+                        <span className="flex items-center gap-1 text-foreground">
+                          <User className="w-4 h-4 text-primary" />
+                          <span className="font-medium">Reported by:</span> {issue.reporter_name}
+                        </span>
+                        <span className="flex items-center gap-1 text-foreground">
+                          <Mail className="w-4 h-4 text-primary" />
+                          <span className="font-medium">Contact:</span> {issue.reporter_contact}
                         </span>
                       </div>
                     </div>
