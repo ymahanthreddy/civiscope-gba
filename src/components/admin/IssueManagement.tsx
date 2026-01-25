@@ -1,0 +1,336 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { useIssues, Issue, IssueStatus } from '@/contexts/IssueContext';
+import { CATEGORY_CONFIG, STATUS_CONFIG } from '@/lib/constants';
+import { toast } from '@/hooks/use-toast';
+import { 
+  Search, 
+  Filter, 
+  MapPin, 
+  Calendar, 
+  User,
+  AlertTriangle,
+  ChevronRight,
+  CheckCircle2,
+  Clock,
+  ImagePlus
+} from 'lucide-react';
+
+export function IssueManagement() {
+  const { issues, officials, assignIssue, updateIssueStatus, closeIssue } = useIssues();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
+  const [closureNote, setClosureNote] = useState('');
+
+  const filteredIssues = issues.filter(issue => {
+    const matchesSearch = 
+      issue.trackingId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      issue.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      issue.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || issue.status === statusFilter;
+    const matchesCategory = categoryFilter === 'all' || issue.category === categoryFilter;
+    
+    return matchesSearch && matchesStatus && matchesCategory;
+  });
+
+  const getDaysElapsed = (date: Date) => {
+    const diff = Date.now() - new Date(date).getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+  };
+
+  const isEscalated = (issue: Issue) => {
+    return issue.status !== 'closed' && getDaysElapsed(issue.createdAt) > 3;
+  };
+
+  const handleAssign = (issueId: string, officialId: string) => {
+    assignIssue(issueId, officialId);
+    toast({
+      title: 'Issue Assigned',
+      description: 'The issue has been assigned to the selected official.',
+    });
+  };
+
+  const handleStatusUpdate = (issueId: string, status: IssueStatus) => {
+    updateIssueStatus(issueId, status, `Status updated to ${STATUS_CONFIG[status].label}`);
+    toast({
+      title: 'Status Updated',
+      description: `Issue status changed to ${STATUS_CONFIG[status].label}`,
+    });
+  };
+
+  const handleCloseIssue = () => {
+    if (selectedIssue && closureNote) {
+      closeIssue(selectedIssue.id, '/placeholder.svg', closureNote);
+      setIsClosing(false);
+      setSelectedIssue(null);
+      setClosureNote('');
+      toast({
+        title: 'Issue Closed ✅',
+        description: 'The issue has been marked as resolved.',
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="font-display text-3xl font-bold text-foreground">Issue Management</h1>
+        <p className="text-muted-foreground">Manage and resolve civic issues</p>
+      </div>
+
+      {/* Filters */}
+      <Card className="shadow-card">
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by ID, location, or description..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex gap-3">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[150px] bg-background">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  <SelectItem value="all">All Status</SelectItem>
+                  {Object.entries(STATUS_CONFIG).map(([key, config]) => (
+                    <SelectItem key={key} value={key}>{config.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-[150px] bg-background">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {Object.entries(CATEGORY_CONFIG).map(([key, config]) => (
+                    <SelectItem key={key} value={key}>
+                      {config.icon} {config.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Issues List */}
+      <div className="space-y-4">
+        {filteredIssues.map((issue, i) => {
+          const escalated = isEscalated(issue);
+          const days = getDaysElapsed(issue.createdAt);
+          
+          return (
+            <motion.div
+              key={issue.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+            >
+              <Card className={`shadow-card hover:shadow-card-hover transition-all ${escalated ? 'border-2 border-destructive/50 bg-destructive/5' : ''}`}>
+                <CardContent className="p-4">
+                  <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                    {/* Issue Info */}
+                    <div className="flex-1">
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className={`w-12 h-12 rounded-xl ${CATEGORY_CONFIG[issue.category].bgColor} flex items-center justify-center text-2xl`}>
+                          {CATEGORY_CONFIG[issue.category].icon}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono font-bold text-primary">{issue.trackingId}</span>
+                            <Badge 
+                              className={`${STATUS_CONFIG[issue.status].bgColor} ${STATUS_CONFIG[issue.status].color} ${STATUS_CONFIG[issue.status].borderColor} border`}
+                            >
+                              {STATUS_CONFIG[issue.status].label}
+                            </Badge>
+                            {escalated && (
+                              <Badge variant="destructive" className="animate-pulse">
+                                <AlertTriangle className="w-3 h-3 mr-1" />
+                                Escalated
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                            {issue.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-4 h-4" />
+                          {issue.location}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {new Date(issue.createdAt).toLocaleDateString('en-IN')}
+                        </span>
+                        <span className={`flex items-center gap-1 ${escalated ? 'text-destructive font-medium' : ''}`}>
+                          <Clock className="w-4 h-4" />
+                          {days} days
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-col sm:flex-row gap-2 lg:w-auto">
+                      {issue.status !== 'closed' && (
+                        <>
+                          {/* Assign Dropdown */}
+                          <Select
+                            value={issue.assignedTo || ''}
+                            onValueChange={(value) => handleAssign(issue.id, value)}
+                          >
+                            <SelectTrigger className="w-full sm:w-[160px] bg-background">
+                              <User className="w-4 h-4 mr-2" />
+                              <SelectValue placeholder="Assign to..." />
+                            </SelectTrigger>
+                            <SelectContent className="bg-popover">
+                              {officials.map((official) => (
+                                <SelectItem key={official.id} value={official.id}>
+                                  {official.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+
+                          {/* Status Update */}
+                          <Select
+                            value={issue.status}
+                            onValueChange={(value) => handleStatusUpdate(issue.id, value as IssueStatus)}
+                          >
+                            <SelectTrigger className="w-full sm:w-[140px] bg-background">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-popover">
+                              <SelectItem value="reported">Reported</SelectItem>
+                              <SelectItem value="assigned">Assigned</SelectItem>
+                              <SelectItem value="in_progress">In Progress</SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          {/* Close Issue */}
+                          <Button
+                            variant="outline"
+                            className="border-success text-success hover:bg-success hover:text-success-foreground"
+                            onClick={() => {
+                              setSelectedIssue(issue);
+                              setIsClosing(true);
+                            }}
+                          >
+                            <CheckCircle2 className="w-4 h-4 mr-2" />
+                            Close
+                          </Button>
+                        </>
+                      )}
+                      
+                      {issue.status === 'closed' && (
+                        <div className="flex items-center gap-2 text-success">
+                          <CheckCircle2 className="w-5 h-5" />
+                          <span className="font-medium">Resolved</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
+
+        {filteredIssues.length === 0 && (
+          <Card className="shadow-card text-center py-12">
+            <CardContent>
+              <Filter className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No issues found matching your filters</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Close Issue Dialog */}
+      <Dialog open={isClosing} onOpenChange={setIsClosing}>
+        <DialogContent className="bg-card">
+          <DialogHeader>
+            <DialogTitle>Close Issue</DialogTitle>
+            <DialogDescription>
+              Mark this issue as resolved. Please add a closure note and photo proof.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-medium mb-2">Issue: {selectedIssue?.trackingId}</p>
+              <p className="text-sm text-muted-foreground">{selectedIssue?.description}</p>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">Closure Note *</label>
+              <Textarea
+                placeholder="Describe how the issue was resolved..."
+                value={closureNote}
+                onChange={(e) => setClosureNote(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">Photo Proof</label>
+              <div className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50">
+                <ImagePlus className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Upload resolution photo</p>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsClosing(false)}>
+              Cancel
+            </Button>
+            <Button 
+              className="bg-success hover:bg-success/90"
+              onClick={handleCloseIssue}
+              disabled={!closureNote}
+            >
+              <CheckCircle2 className="w-4 h-4 mr-2" />
+              Mark as Resolved
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
