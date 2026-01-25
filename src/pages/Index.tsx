@@ -6,6 +6,7 @@ import { CategoriesSection } from '@/components/home/CategoriesSection';
 import { MapSection } from '@/components/home/MapSection';
 import { TestimonialsSection } from '@/components/home/TestimonialsSection';
 import { CTASection } from '@/components/home/CTASection';
+import { LiveIssuesSection } from '@/components/home/LiveIssuesSection';
 
 const Index = () => {
   return (
@@ -14,6 +15,7 @@ const Index = () => {
       <StatsSection />
       <FeaturesSection />
       <CategoriesSection />
+      <LiveIssuesSection />
       <MapSection />
       <TestimonialsSection />
       <CTASection />
