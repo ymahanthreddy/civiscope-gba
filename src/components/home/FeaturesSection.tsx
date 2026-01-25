@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { 
   Send, 
   Search, 
@@ -8,7 +9,8 @@ import {
   Zap,
   MessageSquare,
   MapPin,
-  Clock
+  Clock,
+  ArrowRight
 } from 'lucide-react';
 
 const features = [
@@ -18,6 +20,7 @@ const features = [
     description: 'Report civic issues in under 2 minutes without any registration or login',
     gradient: 'from-blue-500 to-cyan-500',
     delay: 0,
+    link: '/report',
   },
   {
     icon: Search,
@@ -25,6 +28,7 @@ const features = [
     description: 'Monitor your issue status from reported to resolved with live updates',
     gradient: 'from-violet-500 to-purple-500',
     delay: 0.1,
+    link: '/track',
   },
   {
     icon: BarChart3,
@@ -32,6 +36,7 @@ const features = [
     description: 'Powerful analytics help officials prioritize and resolve issues faster',
     gradient: 'from-emerald-500 to-green-500',
     delay: 0.2,
+    link: '/admin-login',
   },
   {
     icon: Bell,
@@ -39,6 +44,7 @@ const features = [
     description: 'Get notified when your issue status changes via email or SMS',
     gradient: 'from-orange-500 to-amber-500',
     delay: 0.3,
+    link: '/auth',
   },
   {
     icon: Shield,
@@ -46,6 +52,7 @@ const features = [
     description: 'Your data is protected with enterprise-grade security measures',
     gradient: 'from-rose-500 to-pink-500',
     delay: 0.4,
+    link: '/auth',
   },
   {
     icon: Zap,
@@ -53,6 +60,7 @@ const features = [
     description: 'Smart categorization and routing ensures issues reach the right department',
     gradient: 'from-yellow-500 to-orange-500',
     delay: 0.5,
+    link: '/report',
   },
 ];
 
@@ -92,39 +100,49 @@ export function FeaturesSection() {
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
           {features.map((feature, i) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: feature.delay, type: 'spring' }}
-              whileHover={{ y: -8, scale: 1.02 }}
-              className="group"
-            >
-              <div className="glass-card rounded-2xl p-6 h-full relative overflow-hidden">
-                {/* Hover gradient */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
-                
-                {/* Icon */}
-                <motion.div
-                  whileHover={{ rotate: 10, scale: 1.1 }}
-                  className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 shadow-lg`}
-                >
-                  <feature.icon className="w-7 h-7 text-white" />
-                </motion.div>
+            <Link key={feature.title} to={feature.link}>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: feature.delay, type: 'spring' }}
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="group cursor-pointer h-full"
+              >
+                <div className="glass-card rounded-2xl p-6 h-full relative overflow-hidden">
+                  {/* Hover gradient */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
+                  
+                  {/* Icon */}
+                  <motion.div
+                    whileHover={{ rotate: 10, scale: 1.1 }}
+                    className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 shadow-lg`}
+                  >
+                    <feature.icon className="w-7 h-7 text-white" />
+                  </motion.div>
 
-                {/* Content */}
-                <h3 className="font-display text-xl font-bold mb-2 text-foreground">
-                  {feature.title}
-                </h3>
-                <p className="text-muted-foreground">
-                  {feature.description}
-                </p>
+                  {/* Content */}
+                  <h3 className="font-display text-xl font-bold mb-2 text-foreground group-hover:text-primary transition-colors">
+                    {feature.title}
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    {feature.description}
+                  </p>
 
-                {/* Decorative corner */}
-                <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${feature.gradient} opacity-10 rounded-bl-full`} />
-              </div>
-            </motion.div>
+                  {/* Learn more link */}
+                  <div className="flex items-center text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                    Learn more
+                    <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+
+                  {/* Decorative corner */}
+                  <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${feature.gradient} opacity-10 rounded-bl-full`} />
+                  
+                  {/* Shimmer effect on hover */}
+                  <div className="absolute inset-0 shimmer opacity-0 group-hover:opacity-100" />
+                </div>
+              </motion.div>
+            </Link>
           ))}
         </div>
 

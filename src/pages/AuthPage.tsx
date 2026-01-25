@@ -11,6 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { LogIn, UserPlus, Shield, Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { z } from 'zod';
+import logo from '@/assets/logo.png';
 
 const loginSchema = z.object({
   email: z.string().trim().email('Please enter a valid email address'),
@@ -136,10 +137,14 @@ export default function AuthPage() {
           <Card className="shadow-2xl border-primary/10">
             <CardHeader className="text-center pb-2">
               <motion.div 
-                className="w-16 h-16 rounded-2xl primary-gradient flex items-center justify-center mx-auto mb-4 shadow-lg"
+                className="w-20 h-20 rounded-2xl overflow-hidden mx-auto mb-4 shadow-lg"
                 whileHover={{ scale: 1.05, rotate: 5 }}
+                animate={{ 
+                  boxShadow: ['0 0 20px rgba(var(--primary), 0.3)', '0 0 40px rgba(var(--primary), 0.5)', '0 0 20px rgba(var(--primary), 0.3)']
+                }}
+                transition={{ boxShadow: { duration: 2, repeat: Infinity } }}
               >
-                <Shield className="w-8 h-8 text-primary-foreground" />
+                <img src={logo} alt="Civiscope Logo" className="w-full h-full object-cover" />
               </motion.div>
               <CardTitle className="font-display text-2xl">Welcome to Civiscope</CardTitle>
               <CardDescription>
