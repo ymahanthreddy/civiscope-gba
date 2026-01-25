@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      issue_likes: {
+        Row: {
+          created_at: string
+          id: string
+          issue_id: string
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          issue_id: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          issue_id?: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_likes_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issues: {
         Row: {
           area: string | null
@@ -24,6 +56,7 @@ export type Database = {
           description: string
           id: string
           image_url: string | null
+          likes_count: number | null
           location: string
           reporter_contact: string
           reporter_name: string
@@ -43,6 +76,7 @@ export type Database = {
           description: string
           id?: string
           image_url?: string | null
+          likes_count?: number | null
           location: string
           reporter_contact: string
           reporter_name: string
@@ -62,6 +96,7 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          likes_count?: number | null
           location?: string
           reporter_contact?: string
           reporter_name?: string

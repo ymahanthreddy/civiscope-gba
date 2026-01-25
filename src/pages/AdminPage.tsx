@@ -3,9 +3,10 @@ import { Layout } from '@/components/layout/Layout';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { IssueManagement } from '@/components/admin/IssueManagement';
 import { AdminReports } from '@/components/reports/AdminReports';
+import { NotificationsPanel } from '@/components/notifications/NotificationsPanel';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutDashboard, ListTodo, Download } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Download, Bell } from 'lucide-react';
 
 export default function AdminPage() {
   const { isAdmin, isLoading } = useAuth();
@@ -37,6 +38,10 @@ export default function AdminPage() {
               <ListTodo className="w-4 h-4" />
               Manage Issues
             </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center gap-2">
+              <Bell className="w-4 h-4" />
+              Notifications
+            </TabsTrigger>
             <TabsTrigger value="reports" className="flex items-center gap-2">
               <Download className="w-4 h-4" />
               Reports
@@ -49,6 +54,10 @@ export default function AdminPage() {
           
           <TabsContent value="issues">
             <IssueManagement />
+          </TabsContent>
+
+          <TabsContent value="notifications">
+            <NotificationsPanel />
           </TabsContent>
 
           <TabsContent value="reports">

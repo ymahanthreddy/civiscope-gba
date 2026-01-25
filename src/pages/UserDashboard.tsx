@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserReports } from '@/components/reports/UserReports';
+import { NotificationsPanel } from '@/components/notifications/NotificationsPanel';
 import { 
   FileText, 
   Clock, 
@@ -114,6 +115,10 @@ export default function UserDashboard() {
             <TabsTrigger value="overview" className="gap-2">
               <LayoutDashboard className="w-4 h-4" />
               Overview
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="gap-2">
+              <Bell className="w-4 h-4" />
+              Notifications
             </TabsTrigger>
             <TabsTrigger value="reports" className="gap-2">
               <Download className="w-4 h-4" />
@@ -272,6 +277,10 @@ export default function UserDashboard() {
                 </CardContent>
               </Card>
             </motion.div>
+          </TabsContent>
+
+          <TabsContent value="notifications">
+            <NotificationsPanel />
           </TabsContent>
 
           <TabsContent value="reports">
