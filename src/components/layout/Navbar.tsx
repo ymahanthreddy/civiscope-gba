@@ -27,6 +27,7 @@ export function Navbar() {
     { to: '/', label: 'Home', icon: Home },
     { to: '/report', label: 'Report Issue', icon: FileText },
     { to: '/track', label: 'Track Issue', icon: Search },
+    { to: '/about', label: 'About Us', icon: User },
   ];
 
   // Add user dashboard for logged-in non-admin users
