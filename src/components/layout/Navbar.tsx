@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { 
   FileText, 
   Search, 
@@ -10,7 +11,8 @@ import {
   LogOut, 
   Menu, 
   X,
-  Building2
+  Building2,
+  Sparkles
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -33,59 +35,97 @@ export function Navbar() {
     <motion.nav 
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="sticky top-0 z-50 glass-card border-b"
+      className="sticky top-0 z-50 glass-card border-b backdrop-blur-xl"
     >
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl primary-gradient flex items-center justify-center shadow-lg">
-              <Building2 className="w-6 h-6 text-primary-foreground" />
-            </div>
+          <Link to="/" className="flex items-center gap-3 group">
+            <motion.div 
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-10 h-10 rounded-xl primary-gradient flex items-center justify-center shadow-lg relative overflow-hidden"
+            >
+              <Building2 className="w-6 h-6 text-primary-foreground relative z-10" />
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+            </motion.div>
             <div className="hidden sm:block">
-              <h1 className="font-display font-bold text-lg text-foreground leading-tight">
+              <h1 className="font-display font-bold text-lg text-foreground leading-tight group-hover:text-primary transition-colors">
                 GBA-IMS
               </h1>
-              <p className="text-xs text-muted-foreground">Civic Connect</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-accent" />
+                Civic Connect
+              </p>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => {
+            {navItems.map((item, index) => {
               const isActive = location.pathname === item.to;
               const Icon = item.icon;
               return (
-                <Link key={item.to} to={item.to}>
-                  <Button
-                    variant={isActive ? 'default' : 'ghost'}
-                    size="sm"
-                    className={isActive ? 'primary-gradient' : ''}
-                  >
-                    <Icon className="w-4 h-4 mr-2" />
-                    {item.label}
-                  </Button>
-                </Link>
+                <motion.div
+                  key={item.to}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Link to={item.to}>
+                    <Button
+                      variant={isActive ? 'default' : 'ghost'}
+                      size="sm"
+                      className={`relative overflow-hidden group ${isActive ? 'primary-gradient neon-glow' : 'hover:bg-primary/10'}`}
+                    >
+                      <Icon className="w-4 h-4 mr-2 transition-transform group-hover:scale-110" />
+                      <span className="relative z-10">{item.label}</span>
+                      {!isActive && (
+                        <motion.div 
+                          className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20"
+                          initial={{ x: '-100%' }}
+                          whileHover={{ x: '0%' }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      )}
+                    </Button>
+                  </Link>
+                </motion.div>
               );
             })}
           </div>
 
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center gap-2">
+          {/* Right side */}
+          <div className="hidden md:flex items-center gap-3">
+            <ThemeToggle />
+            
             {user ? (
               <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">
+                <motion.span 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-sm text-muted-foreground"
+                >
                   Hi, <span className="font-medium text-foreground">{user.name}</span>
-                </span>
-                <Button variant="outline" size="sm" onClick={logout}>
-                  <LogOut className="w-4 h-4 mr-2" />
+                </motion.span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={logout}
+                  className="group hover:border-destructive hover:text-destructive transition-colors"
+                >
+                  <LogOut className="w-4 h-4 mr-2 group-hover:animate-wiggle" />
                   Logout
                 </Button>
               </div>
             ) : (
               <Link to="/admin/login">
-                <Button variant="outline" size="sm">
-                  <LogIn className="w-4 h-4 mr-2" />
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="group hover:border-primary hover:bg-primary/10"
+                >
+                  <LogIn className="w-4 h-4 mr-2 transition-transform group-hover:translate-x-1" />
                   Admin Login
                 </Button>
               </Link>
@@ -93,31 +133,46 @@ export function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
+          <div className="flex md:hidden items-center gap-2">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="relative"
+            >
+              <motion.div
+                animate={{ rotate: mobileMenuOpen ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </motion.div>
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden py-4 border-t"
-          >
-            <div className="flex flex-col gap-2">
-              {navItems.map((item) => {
-                const isActive = location.pathname === item.to;
-                const Icon = item.icon;
-                return (
+        <motion.div
+          initial={false}
+          animate={{ 
+            height: mobileMenuOpen ? 'auto' : 0,
+            opacity: mobileMenuOpen ? 1 : 0
+          }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          className="md:hidden overflow-hidden"
+        >
+          <div className="py-4 border-t space-y-2">
+            {navItems.map((item, index) => {
+              const isActive = location.pathname === item.to;
+              const Icon = item.icon;
+              return (
+                <motion.div
+                  key={item.to}
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                >
                   <Link 
-                    key={item.to} 
                     to={item.to}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -129,26 +184,26 @@ export function Navbar() {
                       {item.label}
                     </Button>
                   </Link>
-                );
-              })}
-              <div className="border-t pt-2 mt-2">
-                {user ? (
-                  <Button variant="outline" className="w-full" onClick={logout}>
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Logout
+                </motion.div>
+              );
+            })}
+            <div className="border-t pt-2 mt-2">
+              {user ? (
+                <Button variant="outline" className="w-full" onClick={logout}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              ) : (
+                <Link to="/admin/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="outline" className="w-full">
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Admin Login
                   </Button>
-                ) : (
-                  <Link to="/admin/login" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="outline" className="w-full">
-                      <LogIn className="w-4 h-4 mr-2" />
-                      Admin Login
-                    </Button>
-                  </Link>
-                )}
-              </div>
+                </Link>
+              )}
             </div>
-          </motion.div>
-        )}
+          </div>
+        </motion.div>
       </div>
     </motion.nav>
   );
