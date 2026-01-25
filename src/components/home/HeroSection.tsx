@@ -2,6 +2,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles, MapPin, Shield, Zap, ChevronDown } from 'lucide-react';
+import logo from '@/assets/logo.png';
 
 export function HeroSection() {
   const { scrollY } = useScroll();
@@ -37,6 +38,25 @@ export function HeroSection() {
 
       <motion.div style={{ y, opacity }} className="container mx-auto px-4 relative z-10 text-center pt-20">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          {/* Logo */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5, rotate: -180 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ duration: 0.8, type: 'spring' }}
+            className="mb-6"
+          >
+            <motion.img 
+              src={logo} 
+              alt="Civiscope Logo" 
+              className="w-24 h-24 md:w-32 md:h-32 mx-auto rounded-2xl shadow-2xl"
+              whileHover={{ scale: 1.1, rotate: 10 }}
+              animate={{ 
+                boxShadow: ['0 0 20px rgba(255,255,255,0.3)', '0 0 40px rgba(255,255,255,0.5)', '0 0 20px rgba(255,255,255,0.3)']
+              }}
+              transition={{ boxShadow: { duration: 2, repeat: Infinity } }}
+            />
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}

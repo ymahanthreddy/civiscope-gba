@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import logo from '@/assets/logo.png';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('admin@civiscope.com');
@@ -79,9 +80,16 @@ export default function AdminLoginPage() {
       >
         <Card className="border-primary/20 shadow-2xl backdrop-blur-sm bg-card/95">
           <CardHeader className="text-center pb-2">
-            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <Shield className="w-8 h-8 text-primary" />
-            </div>
+            <motion.div 
+              className="mx-auto w-20 h-20 rounded-2xl overflow-hidden shadow-lg mb-4"
+              whileHover={{ scale: 1.05, rotate: 5 }}
+              animate={{ 
+                boxShadow: ['0 0 20px rgba(var(--primary), 0.3)', '0 0 40px rgba(var(--primary), 0.5)', '0 0 20px rgba(var(--primary), 0.3)']
+              }}
+              transition={{ boxShadow: { duration: 2, repeat: Infinity } }}
+            >
+              <img src={logo} alt="Civiscope Logo" className="w-full h-full object-cover" />
+            </motion.div>
             <CardTitle className="text-2xl font-bold">Admin Portal</CardTitle>
             <CardDescription>CiviScope Administration Access</CardDescription>
           </CardHeader>

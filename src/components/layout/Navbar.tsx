@@ -11,10 +11,11 @@ import {
   LogOut, 
   Menu, 
   X,
-  Building2,
-  Sparkles
+  Sparkles,
+  User
 } from 'lucide-react';
 import { useState } from 'react';
+import logo from '@/assets/logo.png';
 
 export function Navbar() {
   const location = useLocation();
@@ -22,13 +23,18 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { to: '/', label: 'Home', icon: Building2 },
+    { to: '/', label: 'Home', icon: () => <img src={logo} alt="" className="w-4 h-4 rounded" /> },
     { to: '/report', label: 'Report Issue', icon: FileText },
     { to: '/track', label: 'Track Issue', icon: Search },
   ];
 
+  // Add user dashboard for logged-in non-admin users
+  if (user && !isAdmin) {
+    navItems.push({ to: '/dashboard', label: 'My Dashboard', icon: User });
+  }
+
   if (isAdmin) {
-    navItems.push({ to: '/admin', label: 'Dashboard', icon: LayoutDashboard });
+    navItems.push({ to: '/admin', label: 'Admin Dashboard', icon: LayoutDashboard });
   }
 
   const handleSignOut = async () => {
@@ -49,9 +55,9 @@ export function Navbar() {
             <motion.div 
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
-              className="w-10 h-10 rounded-xl primary-gradient flex items-center justify-center shadow-lg relative overflow-hidden"
+              className="w-10 h-10 rounded-xl overflow-hidden shadow-lg relative"
             >
-              <Building2 className="w-6 h-6 text-primary-foreground relative z-10" />
+              <img src={logo} alt="Civiscope Logo" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
             </motion.div>
             <div className="hidden sm:block">

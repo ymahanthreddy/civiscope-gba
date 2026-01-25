@@ -1,5 +1,6 @@
-import { Building2, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import logo from '@/assets/logo.png';
 
 export function Footer() {
   return (
@@ -9,9 +10,7 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl primary-gradient flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-primary-foreground" />
-              </div>
+              <img src={logo} alt="Civiscope Logo" className="w-10 h-10 rounded-xl shadow-lg" />
               <div>
                 <h3 className="font-display font-bold text-foreground">Civiscope</h3>
                 <p className="text-xs text-muted-foreground">Civic Connect Platform</p>
