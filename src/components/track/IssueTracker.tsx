@@ -27,35 +27,42 @@ export function IssueTracker() {
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    if (searchParams.get('id')) {
-      handleSearch();
+    const idFromParams = searchParams.get('id');
+    if (idFromParams) {
+      setTrackingId(idFromParams);
+      handleSearchById(idFromParams);
     }
-  }, []);
+  }, [searchParams]);
 
-  const handleSearch = async () => {
-    if (!trackingId.trim()) return;
+  const handleSearchById = async (id: string) => {
+    if (!id.trim()) return;
     
     setIsSearching(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const foundIssue = getIssueByTrackingId(trackingId.trim());
-    setIssue(foundIssue || null);
+    const foundIssue = await getIssueByTrackingId(id.trim());
+    setIssue(foundIssue);
     setSearched(true);
     setIsSearching(false);
+  };
+
+  const handleSearch = async () => {
+    await handleSearchById(trackingId);
   };
 
   const getStatusIndex = (status: string) => {
     return WORKFLOW_STEPS.findIndex(s => s.status === status);
   };
 
-  const getDaysElapsed = (date: Date) => {
-    const diff = Date.now() - new Date(date).getTime();
+  const getDaysElapsed = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   };
 
   const isEscalated = (issue: Issue) => {
-    return issue.status !== 'closed' && getDaysElapsed(issue.createdAt) > 3;
+    return issue.status !== 'closed' && getDaysElapsed(issue.created_at) > 3;
   };
+
+  const categoryKey = issue?.category as keyof typeof CATEGORY_CONFIG;
+  const statusKey = issue?.status as keyof typeof STATUS_CONFIG;
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -76,7 +83,7 @@ export function IssueTracker() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                 <Input
-                  placeholder="Enter tracking ID (e.g., GBA-2024-12345)"
+                  placeholder="Enter tracking ID (e.g., CIV-XXXXXXXX)"
                   value={trackingId}
                   onChange={(e) => setTrackingId(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -125,17 +132,17 @@ export function IssueTracker() {
                 <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="text-3xl">{CATEGORY_CONFIG[issue.category].icon}</span>
+                      <span className="text-3xl">{CATEGORY_CONFIG[categoryKey]?.icon || '📋'}</span>
                       <div>
                         <p className="text-sm text-muted-foreground">Tracking ID</p>
-                        <p className="font-mono text-xl font-bold text-primary">{issue.trackingId}</p>
+                        <p className="font-mono text-xl font-bold text-primary">{issue.tracking_id}</p>
                       </div>
                     </div>
                   </div>
                   <Badge 
-                    className={`${STATUS_CONFIG[issue.status].bgColor} ${STATUS_CONFIG[issue.status].color} ${STATUS_CONFIG[issue.status].borderColor} border text-sm px-3 py-1`}
+                    className={`${STATUS_CONFIG[statusKey]?.bgColor} ${STATUS_CONFIG[statusKey]?.color} ${STATUS_CONFIG[statusKey]?.borderColor} border text-sm px-3 py-1`}
                   >
-                    {STATUS_CONFIG[issue.status].label}
+                    {STATUS_CONFIG[statusKey]?.label || issue.status}
                   </Badge>
                 </div>
 
@@ -189,7 +196,7 @@ export function IssueTracker() {
                     <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="text-sm text-muted-foreground">Reported On</p>
-                      <p className="font-medium">{new Date(issue.createdAt).toLocaleDateString('en-IN', { 
+                      <p className="font-medium">{new Date(issue.created_at).toLocaleDateString('en-IN', { 
                         day: 'numeric', 
                         month: 'short', 
                         year: 'numeric' 
@@ -200,15 +207,15 @@ export function IssueTracker() {
                     <Clock className="w-5 h-5 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="text-sm text-muted-foreground">Time Elapsed</p>
-                      <p className="font-medium">{getDaysElapsed(issue.createdAt)} days</p>
+                      <p className="font-medium">{getDaysElapsed(issue.created_at)} days</p>
                     </div>
                   </div>
-                  {issue.assignedTo && (
+                  {issue.assigned_to && (
                     <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                       <User className="w-5 h-5 text-muted-foreground mt-0.5" />
                       <div>
                         <p className="text-sm text-muted-foreground">Assigned To</p>
-                        <p className="font-medium">Officer #{issue.assignedTo}</p>
+                        <p className="font-medium">{issue.assigned_to}</p>
                       </div>
                     </div>
                   )}
@@ -220,35 +227,28 @@ export function IssueTracker() {
                   <p className="text-muted-foreground">{issue.description}</p>
                 </div>
 
-                {/* Activity Timeline */}
-                <div>
-                  <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4" />
-                    Activity Timeline
-                  </h4>
-                  <div className="space-y-3">
-                    {issue.notes.map((note, i) => (
-                      <div key={i} className="flex gap-3 pl-4 border-l-2 border-muted">
-                        <div>
-                          <p className="text-sm">{note}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {new Date(issue.createdAt.getTime() + i * 60000 * 60).toLocaleString('en-IN')}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                {/* Resolution Notes */}
+                {issue.resolution_notes && (
+                  <div className="mb-6">
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <MessageSquare className="w-4 h-4" />
+                      Resolution Notes
+                    </h4>
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <p className="text-sm">{issue.resolution_notes}</p>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Closure Image */}
-                {issue.status === 'closed' && issue.closureImageUrl && (
+                {/* Closure Status */}
+                {issue.status === 'closed' && issue.closed_at && (
                   <div className="mt-6 p-4 bg-success/5 border border-success/20 rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
                       <CheckCircle2 className="w-5 h-5 text-success" />
                       <span className="font-medium text-success">Issue Resolved</span>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Closed on {issue.closedAt?.toLocaleDateString('en-IN')}
+                      Closed on {new Date(issue.closed_at).toLocaleDateString('en-IN')}
                     </p>
                   </div>
                 )}
