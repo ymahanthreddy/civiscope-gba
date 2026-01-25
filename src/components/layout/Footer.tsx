@@ -46,9 +46,9 @@ export function Footer() {
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Civiscope - Civic Issue Management System
           </p>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="w-4 h-4 text-accent" />
-            <span>Powered by AI</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 border border-violet-500/20">
+            <Sparkles className="w-4 h-4 text-violet-500 animate-pulse" />
+            <span className="text-sm font-medium bg-gradient-to-r from-violet-600 to-fuchsia-500 bg-clip-text text-transparent">Powered by Agentic AI</span>
           </div>
         </div>
       </div>
