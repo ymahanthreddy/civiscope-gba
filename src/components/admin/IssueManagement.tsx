@@ -225,11 +225,13 @@ export function IssueManagement() {
                     <div className="flex flex-col sm:flex-row gap-2 lg:w-auto">
                       {/* Escalated - Show prominent message, no actions */}
                       {isEscalated && (
-                        <div className="flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-destructive/30 rounded-lg">
-                          <Flame className="w-5 h-5 text-destructive animate-pulse" />
+                        <div className="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-red-500/15 to-orange-500/15 border-2 border-destructive/40 rounded-xl shadow-lg">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-md">
+                            <Flame className="w-5 h-5 text-white animate-pulse" />
+                          </div>
                           <div>
-                            <p className="font-semibold text-destructive text-sm">Issue Escalated</p>
-                            <p className="text-xs text-destructive/70">Requires immediate attention</p>
+                            <p className="font-bold text-destructive text-sm">Issue Escalated to Supervisor</p>
+                            <p className="text-xs text-destructive/80">Urgent attention required • Admin notified</p>
                           </div>
                         </div>
                       )}
