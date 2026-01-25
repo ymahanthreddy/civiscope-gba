@@ -139,7 +139,17 @@ export function MapSection() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <InteractiveMap height="500px" showControls={true} />
+            <div className="glass-card rounded-3xl overflow-hidden h-[500px] w-full border border-primary/10 shadow-lg">
+  <iframe
+    title="Greater Bengaluru Civic Hotspot Map"
+    className="w-full h-full"
+    loading="lazy"
+    allowFullScreen
+    referrerPolicy="no-referrer-when-downgrade"
+    src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d62253.184933986344!2d77.5946!3d12.9716!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae15dd4a9ff74f%3A0x6aa5d4c853bdfd69!2sBengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1706190388870!5m2!1sen!2sin"
+  />
+</div>
+
           </motion.div>
 
           {/* Hotspot Details Sidebar */}
