@@ -18,7 +18,7 @@ import { useState } from 'react';
 
 export function Navbar() {
   const location = useLocation();
-  const { user, logout, isAdmin } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -30,6 +30,11 @@ export function Navbar() {
   if (isAdmin) {
     navItems.push({ to: '/admin', label: 'Dashboard', icon: LayoutDashboard });
   }
+
+  const handleSignOut = async () => {
+    await signOut();
+    setMobileMenuOpen(false);
+  };
 
   return (
     <motion.nav 
@@ -51,7 +56,7 @@ export function Navbar() {
             </motion.div>
             <div className="hidden sm:block">
               <h1 className="font-display font-bold text-lg text-foreground leading-tight group-hover:text-primary transition-colors">
-                GBA-IMS
+                Civiscope
               </h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-accent" />
@@ -106,27 +111,27 @@ export function Navbar() {
                   animate={{ opacity: 1 }}
                   className="text-sm text-muted-foreground"
                 >
-                  Hi, <span className="font-medium text-foreground">{user.name}</span>
+                  Hi, <span className="font-medium text-foreground">{user.user_metadata?.full_name || user.email?.split('@')[0]}</span>
                 </motion.span>
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={logout}
+                  onClick={handleSignOut}
                   className="group hover:border-destructive hover:text-destructive transition-colors"
                 >
                   <LogOut className="w-4 h-4 mr-2 group-hover:animate-wiggle" />
-                  Logout
+                  Sign Out
                 </Button>
               </div>
             ) : (
-              <Link to="/admin/login">
+              <Link to="/auth">
                 <Button 
                   variant="outline" 
                   size="sm"
                   className="group hover:border-primary hover:bg-primary/10"
                 >
                   <LogIn className="w-4 h-4 mr-2 transition-transform group-hover:translate-x-1" />
-                  Admin Login
+                  Sign In
                 </Button>
               </Link>
             )}
@@ -189,15 +194,15 @@ export function Navbar() {
             })}
             <div className="border-t pt-2 mt-2">
               {user ? (
-                <Button variant="outline" className="w-full" onClick={logout}>
+                <Button variant="outline" className="w-full" onClick={handleSignOut}>
                   <LogOut className="w-4 h-4 mr-2" />
-                  Logout
+                  Sign Out
                 </Button>
               ) : (
-                <Link to="/admin/login" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="outline" className="w-full">
                     <LogIn className="w-4 h-4 mr-2" />
-                    Admin Login
+                    Sign In
                   </Button>
                 </Link>
               )}

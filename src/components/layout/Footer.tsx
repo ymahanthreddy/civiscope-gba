@@ -1,4 +1,5 @@
 import { Building2, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function Footer() {
   return (
@@ -12,12 +13,12 @@ export function Footer() {
                 <Building2 className="w-6 h-6 text-primary-foreground" />
               </div>
               <div>
-                <h3 className="font-display font-bold text-foreground">GBA-IMS</h3>
-                <p className="text-xs text-muted-foreground">Greater Bengaluru Area</p>
+                <h3 className="font-display font-bold text-foreground">Civiscope</h3>
+                <p className="text-xs text-muted-foreground">Civic Connect Platform</p>
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
-              Empowering citizens to build a better Bengaluru, one issue at a time.
+              Empowering citizens to build a better community, one issue at a time.
             </p>
           </div>
 
@@ -25,9 +26,9 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4 text-foreground">Quick Links</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="/report" className="hover:text-primary transition-colors">Report an Issue</a></li>
-              <li><a href="/track" className="hover:text-primary transition-colors">Track Your Complaint</a></li>
-              <li><a href="/admin/login" className="hover:text-primary transition-colors">Official Portal</a></li>
+              <li><Link to="/report" className="hover:text-primary transition-colors">Report an Issue</Link></li>
+              <li><Link to="/track" className="hover:text-primary transition-colors">Track Your Complaint</Link></li>
+              <li><Link to="/auth" className="hover:text-primary transition-colors">Sign In</Link></li>
             </ul>
           </div>
 
@@ -36,15 +37,15 @@ export function Footer() {
             <h4 className="font-semibold mb-4 text-foreground">Contact</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>Helpline: 1800-XXX-XXXX</li>
-              <li>Email: support@gba-ims.gov.in</li>
-              <li>BBMP Head Office, Bengaluru</li>
+              <li>Email: support@civiscope.in</li>
+              <li>Head Office, Bengaluru</li>
             </ul>
           </div>
         </div>
 
         <div className="border-t mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Greater Bengaluru Area Information Management System
+            © {new Date().getFullYear()} Civiscope - Civic Issue Management System
           </p>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Sparkles className="w-4 h-4 text-accent" />
