@@ -17,7 +17,7 @@ import { useIssues, IssueCategory } from '@/contexts/IssueContext';
 import { CATEGORY_CONFIG } from '@/lib/constants';
 import { BENGALURU_AREAS } from '@/lib/bengaluruAreas';
 import { toast } from '@/hooks/use-toast';
-import { Send, MapPin, User, Mail, CheckCircle2, Navigation } from 'lucide-react';
+import { Send, MapPin, User, Mail, CheckCircle2, Navigation, Sparkles } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
 
 export function ReportForm() {
@@ -93,9 +93,13 @@ export function ReportForm() {
             <h2 className="font-display text-3xl font-bold text-foreground mb-2">
               Issue Reported Successfully!
             </h2>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-2">
               Thank you for helping us improve your community
             </p>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 border border-violet-500/20 mb-4">
+              <Sparkles className="w-4 h-4 text-violet-500" />
+              <span className="text-sm font-medium text-violet-600 dark:text-violet-400">Agentic AI is auto-assigning your issue</span>
+            </div>
 
             <div className="bg-muted rounded-xl p-6 mb-6">
               <p className="text-sm text-muted-foreground mb-2">Your Tracking ID</p>

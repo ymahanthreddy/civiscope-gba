@@ -104,10 +104,36 @@ export function useSupabaseIssues() {
       return null;
     }
 
-    toast({
-      title: 'Issue Reported Successfully! 🎉',
-      description: `Your tracking ID is ${data.tracking_id}`,
-    });
+    // Trigger AI auto-assignment in background
+    try {
+      const autoAssignResponse = await supabase.functions.invoke('auto-assign-issue', {
+        body: {
+          issueId: data.id,
+          category: issueData.category,
+          description: issueData.description,
+          location: issueData.location,
+        }
+      });
+      
+      if (autoAssignResponse.data?.success) {
+        console.log('AI Auto-assignment:', autoAssignResponse.data.message);
+        toast({
+          title: 'Issue Reported Successfully! 🎉',
+          description: `Tracking ID: ${data.tracking_id} • AI assigned to ${autoAssignResponse.data.assignedTo}`,
+        });
+      } else {
+        toast({
+          title: 'Issue Reported Successfully! 🎉',
+          description: `Your tracking ID is ${data.tracking_id}`,
+        });
+      }
+    } catch (aiError) {
+      console.error('AI auto-assign error:', aiError);
+      toast({
+        title: 'Issue Reported Successfully! 🎉',
+        description: `Your tracking ID is ${data.tracking_id}`,
+      });
+    }
 
     return data.tracking_id;
   };

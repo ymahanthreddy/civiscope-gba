@@ -163,8 +163,8 @@ export function HeroSection() {
               className="text-lg md:text-xl text-muted-foreground mb-8 max-w-xl"
             >
               Connect with your city, report civic issues, and track resolutions in real-time. 
-              Get <span className="text-cyan-600 dark:text-cyan-400 font-semibold">AI-powered insights</span>, discover local improvements, 
-              and build a better Bengaluru together.
+              Powered by <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-500 font-bold">Agentic AI</span> for 
+              automatic issue assignment and faster resolutions.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -208,8 +208,8 @@ export function HeroSection() {
                 <span className="text-sm">Secure & Private</span>
               </div>
               <div className="flex items-center gap-2">
-                <Zap className="w-5 h-5 text-amber-500" />
-                <span className="text-sm">AI-Powered</span>
+                <Sparkles className="w-5 h-5 text-violet-500" />
+                <span className="text-sm">Agentic AI</span>
               </div>
             </motion.div>
           </motion.div>
@@ -299,20 +299,20 @@ export function HeroSection() {
               </div>
             </motion.div>
 
-            {/* Floating Card - AI Powered */}
+            {/* Floating Card - Agentic AI Powered */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1 }}
               whileHover={{ scale: 1.05, y: -5 }}
-              className="absolute -top-4 -right-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 shadow-lg shadow-cyan-500/30"
+              className="absolute -top-4 -right-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-violet-600 via-purple-500 to-fuchsia-500 shadow-lg shadow-purple-500/30"
             >
               <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
+                <Sparkles className="w-5 h-5 text-white animate-pulse" />
               </div>
               <div>
-                <p className="text-white font-bold text-sm">AI-Powered</p>
-                <p className="text-white/80 text-xs">Smart analytics</p>
+                <p className="text-white font-bold text-sm">Agentic AI</p>
+                <p className="text-white/80 text-xs">Auto-Assignment</p>
               </div>
             </motion.div>
 
