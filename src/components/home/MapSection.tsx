@@ -136,7 +136,7 @@ export function MapSection() {
                 loading="lazy"
                 allowFullScreen
                 referrerPolicy="no-referrer-when-downgrade"
-                src="https://www.google.com/maps/d/edit?mid=1wbZmIzbQ5rkwZfzs2cOl3CpguMbn2SU&usp=sharing"
+                src="https://www.google.com/maps/d/embed?mid=1wbZmIzbQ5rkwZfzs2cOl3CpguMbn2SU&ehbc=2E312F"
               />
             </div>
           </motion.div>
