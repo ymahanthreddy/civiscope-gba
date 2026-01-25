@@ -35,12 +35,55 @@ const testimonials = [
 export function TestimonialsSection() {
   return (
     <section className="py-24 px-4 relative overflow-hidden bg-gradient-to-b from-muted/50 to-background">
-      {/* Background decoration */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full opacity-30">
-        <div className="absolute top-10 left-10 w-20 h-20 border-2 border-primary/20 rounded-full" />
-        <div className="absolute top-40 right-20 w-12 h-12 border-2 border-accent/20 rounded-lg rotate-45" />
-        <div className="absolute bottom-20 left-1/4 w-16 h-16 border-2 border-info/20 rounded-full" />
-      </div>
+      {/* Animated Background gradient blobs */}
+      <motion.div
+        animate={{ 
+          x: [0, 40, 0], 
+          y: [0, -25, 0],
+          scale: [1, 1.2, 1]
+        }}
+        transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-1/4 left-[5%] w-72 h-72 rounded-full bg-gradient-to-br from-amber-500/15 to-orange-500/10 blur-3xl"
+      />
+      <motion.div
+        animate={{ 
+          x: [0, -35, 0], 
+          y: [0, 35, 0],
+          scale: [1, 1.3, 1]
+        }}
+        transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute bottom-1/3 right-[10%] w-80 h-80 rounded-full bg-gradient-to-br from-pink-500/15 to-rose-500/10 blur-3xl"
+      />
+      <motion.div
+        animate={{ 
+          scale: [1, 1.25, 1],
+          opacity: [0.1, 0.2, 0.1]
+        }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-1/2 left-1/3 w-96 h-96 rounded-full bg-gradient-to-br from-violet-500/10 to-indigo-500/5 blur-3xl"
+      />
+      
+      {/* Animated floating shapes */}
+      <motion.div
+        animate={{ rotate: 360, y: [0, -15, 0] }}
+        transition={{ rotate: { duration: 25, repeat: Infinity, ease: 'linear' }, y: { duration: 6, repeat: Infinity, ease: 'easeInOut' } }}
+        className="absolute top-20 left-[15%] w-16 h-16 border-2 border-primary/20 rounded-xl"
+      />
+      <motion.div
+        animate={{ rotate: -360, scale: [1, 1.2, 1] }}
+        transition={{ rotate: { duration: 20, repeat: Infinity, ease: 'linear' }, scale: { duration: 4, repeat: Infinity, ease: 'easeInOut' } }}
+        className="absolute top-32 right-[20%] w-10 h-10 border-2 border-accent/25 rounded-full"
+      />
+      <motion.div
+        animate={{ y: [0, 20, 0], x: [0, 15, 0] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute bottom-24 left-[25%] w-8 h-8 bg-gradient-to-br from-warning/20 to-yellow-500/10 rounded-lg rotate-45"
+      />
+      <motion.div
+        animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute bottom-40 right-[30%] w-6 h-6 bg-gradient-to-br from-info/30 to-cyan-500/15 rounded-full"
+      />
 
       <div className="container mx-auto relative z-10">
         {/* Header */}

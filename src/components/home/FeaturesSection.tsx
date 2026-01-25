@@ -73,13 +73,53 @@ const workflow = [
 export function FeaturesSection() {
   return (
     <section className="py-24 px-4 relative overflow-hidden bg-muted/30">
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-30">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 opacity-40">
         <div className="absolute top-0 left-0 w-full h-full" style={{
           backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--primary) / 0.15) 1px, transparent 0)`,
           backgroundSize: '40px 40px'
         }} />
       </div>
+      
+      {/* Floating gradient orbs */}
+      <motion.div
+        animate={{ 
+          x: [0, 50, 0], 
+          y: [0, -30, 0],
+          scale: [1, 1.2, 1]
+        }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-20 left-[10%] w-64 h-64 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/10 blur-3xl"
+      />
+      <motion.div
+        animate={{ 
+          x: [0, -40, 0], 
+          y: [0, 40, 0],
+          scale: [1, 1.3, 1]
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute bottom-20 right-[15%] w-72 h-72 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/10 blur-3xl"
+      />
+      <motion.div
+        animate={{ 
+          x: [0, 30, -30, 0], 
+          y: [0, -20, 20, 0]
+        }}
+        transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-gradient-to-br from-emerald-500/10 to-teal-500/10 blur-3xl"
+      />
+
+      {/* Animated shapes */}
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+        className="absolute top-32 right-[20%] w-24 h-24 border-2 border-primary/20 rounded-xl"
+      />
+      <motion.div
+        animate={{ rotate: -360 }}
+        transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+        className="absolute bottom-32 left-[15%] w-16 h-16 border-2 border-accent/20 rounded-full"
+      />
 
       <div className="container mx-auto relative z-10">
         {/* Section Header */}

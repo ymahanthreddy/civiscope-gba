@@ -12,10 +12,53 @@ const categories = Object.entries(CATEGORY_CONFIG).map(([key, config]) => ({
 export function CategoriesSection() {
   return (
     <section className="py-24 px-4 relative overflow-hidden">
-      {/* Background */}
+      {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-background to-muted/30" />
-      <div className="absolute top-1/3 left-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/3 right-0 w-80 h-80 bg-accent/5 rounded-full blur-3xl" />
+      
+      {/* Animated floating gradient blobs */}
+      <motion.div
+        animate={{ 
+          x: [0, 60, 0], 
+          y: [0, -40, 0],
+          scale: [1, 1.2, 1]
+        }}
+        transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-1/4 left-[5%] w-80 h-80 rounded-full bg-gradient-to-br from-orange-500/15 to-yellow-500/10 blur-3xl"
+      />
+      <motion.div
+        animate={{ 
+          x: [0, -50, 0], 
+          y: [0, 50, 0],
+          scale: [1, 1.3, 1]
+        }}
+        transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute bottom-1/4 right-[10%] w-96 h-96 rounded-full bg-gradient-to-br from-teal-500/15 to-cyan-500/10 blur-3xl"
+      />
+      <motion.div
+        animate={{ 
+          scale: [1, 1.4, 1],
+          opacity: [0.1, 0.2, 0.1]
+        }}
+        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-rose-500/10 to-pink-500/5 blur-3xl"
+      />
+      
+      {/* Floating geometric shapes */}
+      <motion.div
+        animate={{ y: [0, -20, 0], rotate: [0, 180, 360] }}
+        transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-20 right-[25%] w-12 h-12 border-2 border-warning/30 rounded-lg"
+      />
+      <motion.div
+        animate={{ y: [0, 30, 0], x: [0, -20, 0] }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute bottom-32 left-[20%] w-8 h-8 bg-gradient-to-br from-success/20 to-emerald-500/10 rounded-full"
+      />
+      <motion.div
+        animate={{ scale: [1, 1.2, 1], rotate: [45, 90, 45] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-1/3 left-[8%] w-6 h-6 bg-gradient-to-br from-info/30 to-blue-500/20 rounded"
+      />
 
       <div className="container mx-auto relative z-10">
         {/* Header */}

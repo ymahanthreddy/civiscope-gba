@@ -9,22 +9,70 @@ export function CTASection() {
       {/* Background */}
       <div className="absolute inset-0 hero-gradient opacity-90" />
       
+      {/* Animated gradient overlays */}
+      <motion.div
+        animate={{ 
+          x: [0, 60, 0], 
+          y: [0, -40, 0],
+          scale: [1, 1.3, 1]
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-1/4 left-[5%] w-80 h-80 rounded-full bg-gradient-to-br from-yellow-400/20 to-orange-500/10 blur-3xl"
+      />
+      <motion.div
+        animate={{ 
+          x: [0, -50, 0], 
+          y: [0, 50, 0],
+          scale: [1, 1.4, 1]
+        }}
+        transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute bottom-1/4 right-[10%] w-96 h-96 rounded-full bg-gradient-to-br from-pink-500/20 to-rose-500/10 blur-3xl"
+      />
+      <motion.div
+        animate={{ 
+          scale: [1, 1.5, 1],
+          opacity: [0.15, 0.3, 0.15]
+        }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-cyan-400/15 to-teal-500/10 blur-3xl"
+      />
+      
       {/* Floating elements */}
       <motion.div
-        animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
-        transition={{ duration: 6, repeat: Infinity }}
-        className="absolute top-20 left-[10%] w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm"
+        animate={{ y: [0, -25, 0], rotate: [0, 10, 0], scale: [1, 1.1, 1] }}
+        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-16 left-[8%] w-24 h-24 rounded-full bg-white/10 backdrop-blur-sm border border-white/20"
       />
       <motion.div
-        animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
-        transition={{ duration: 8, repeat: Infinity }}
-        className="absolute bottom-20 right-[15%] w-32 h-32 rounded-full bg-white/10 backdrop-blur-sm"
+        animate={{ y: [0, 30, 0], rotate: [0, -15, 0] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute bottom-16 right-[12%] w-36 h-36 rounded-full bg-white/10 backdrop-blur-sm border border-white/20"
       />
       <motion.div
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ duration: 4, repeat: Infinity }}
-        className="absolute top-1/3 right-[20%] w-16 h-16 rounded-lg bg-white/10 backdrop-blur-sm rotate-45"
+        animate={{ scale: [1, 1.3, 1], rotate: [45, 90, 45] }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-1/3 right-[18%] w-20 h-20 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20"
       />
+      <motion.div
+        animate={{ y: [0, -20, 0], x: [0, 15, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute bottom-1/3 left-[18%] w-14 h-14 rounded-lg bg-gradient-to-br from-yellow-300/20 to-orange-400/10 backdrop-blur-sm"
+      />
+      
+      {/* Sparkle particles */}
+      {[...Array(10)].map((_, i) => (
+        <motion.div
+          key={i}
+          animate={{ 
+            y: [0, -40, 0],
+            opacity: [0.2, 0.6, 0.2],
+            scale: [1, 1.5, 1]
+          }}
+          transition={{ duration: 3 + i * 0.5, repeat: Infinity, ease: 'easeInOut', delay: i * 0.3 }}
+          className="absolute w-1.5 h-1.5 rounded-full bg-white/50"
+          style={{ left: `${5 + i * 10}%`, top: `${15 + (i % 4) * 20}%` }}
+        />
+      ))}
 
       <div className="container mx-auto relative z-10">
         <div className="max-w-4xl mx-auto text-center">
