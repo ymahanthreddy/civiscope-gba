@@ -32,6 +32,7 @@ export type Database = {
           status: Database["public"]["Enums"]["issue_status"]
           tracking_id: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           area?: string | null
@@ -50,6 +51,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["issue_status"]
           tracking_id: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           area?: string | null
@@ -68,6 +70,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["issue_status"]
           tracking_id?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
