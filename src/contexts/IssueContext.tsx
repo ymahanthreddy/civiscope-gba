@@ -9,6 +9,7 @@ interface IssueContextType {
     category: IssueCategory;
     description: string;
     location: string;
+    area?: string;
     reporterName: string;
     reporterContact: string;
     imageUrl?: string;
@@ -42,6 +43,7 @@ export function IssueProvider({ children }: { children: ReactNode }) {
     category: IssueCategory;
     description: string;
     location: string;
+    area?: string;
     reporterName: string;
     reporterContact: string;
     imageUrl?: string;
@@ -50,6 +52,7 @@ export function IssueProvider({ children }: { children: ReactNode }) {
       category: issueData.category,
       description: issueData.description,
       location: issueData.location,
+      area: issueData.area,
       reporter_name: issueData.reporterName,
       reporter_contact: issueData.reporterContact,
       image_url: issueData.imageUrl,

@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       issues: {
         Row: {
+          area: string | null
           assigned_to: string | null
           category: Database["public"]["Enums"]["issue_category"]
           closed_at: string | null
@@ -33,6 +34,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          area?: string | null
           assigned_to?: string | null
           category: Database["public"]["Enums"]["issue_category"]
           closed_at?: string | null
@@ -50,6 +52,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          area?: string | null
           assigned_to?: string | null
           category?: Database["public"]["Enums"]["issue_category"]
           closed_at?: string | null

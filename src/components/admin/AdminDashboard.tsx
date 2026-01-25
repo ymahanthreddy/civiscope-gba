@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useIssues } from '@/contexts/IssueContext';
 import { CATEGORY_CONFIG, STATUS_CONFIG } from '@/lib/constants';
+import { BENGALURU_AREAS } from '@/lib/bengaluruAreas';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -18,7 +19,8 @@ import {
   Users,
   Activity,
   Sparkles,
-  Zap
+  Zap,
+  MapPin
 } from 'lucide-react';
 
 const COLORS = ['#f97316', '#3b82f6', '#8b5cf6', '#10b981', '#ef4444', '#06b6d4'];
@@ -58,6 +60,23 @@ export function AdminDashboard() {
       icon: CATEGORY_CONFIG[key as keyof typeof CATEGORY_CONFIG]?.icon || '📋',
     }));
   }, [issues]);
+
+  // Area-based data from real issues
+  const areaData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    issues.forEach(issue => {
+      const area = issue.area || 'Unknown';
+      counts[area] = (counts[area] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8);
+  }, [issues]);
+
+  // Top affected area
+  const topArea = areaData[0]?.name || 'N/A';
+  const topAreaCount = areaData[0]?.value || 0;
 
   const monthlyData = useMemo(() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
@@ -311,6 +330,64 @@ export function AdminDashboard() {
           </Card>
         </motion.div>
       </div>
+
+      {/* Area-Based Analytics - NEW */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
+      >
+        <Card className="shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-primary" />
+              Issues by Area
+              <Badge variant="outline" className="ml-auto border-destructive text-destructive">
+                <AlertTriangle className="w-3 h-3 mr-1" />
+                Most affected: {topArea} ({topAreaCount})
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={areaData} layout="vertical">
+                  <defs>
+                    <linearGradient id="areaGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#8b5cf6" />
+                      <stop offset="100%" stopColor="#ec4899" />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis type="number" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis 
+                    dataKey="name" 
+                    type="category" 
+                    stroke="hsl(var(--muted-foreground))" 
+                    width={100}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '12px',
+                      boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)'
+                    }}
+                  />
+                  <Bar 
+                    dataKey="value" 
+                    name="Issues" 
+                    fill="url(#areaGradient)" 
+                    radius={[0, 8, 8, 0]}
+                    animationDuration={1500}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Trend Area Chart */}
       <motion.div

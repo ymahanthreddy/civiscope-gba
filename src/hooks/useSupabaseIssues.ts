@@ -72,6 +72,7 @@ export function useSupabaseIssues() {
     category: IssueCategory;
     description: string;
     location: string;
+    area?: string;
     reporter_name: string;
     reporter_contact: string;
     image_url?: string;
@@ -82,6 +83,7 @@ export function useSupabaseIssues() {
         category: issueData.category,
         description: issueData.description,
         location: issueData.location,
+        area: issueData.area,
         reporter_name: issueData.reporter_name,
         reporter_contact: issueData.reporter_contact,
         image_url: issueData.image_url,
