@@ -17,7 +17,8 @@ import { useIssues, IssueCategory } from '@/contexts/IssueContext';
 import { CATEGORY_CONFIG } from '@/lib/constants';
 import { BENGALURU_AREAS } from '@/lib/bengaluruAreas';
 import { toast } from '@/hooks/use-toast';
-import { Send, MapPin, User, Mail, ImagePlus, CheckCircle2, Navigation } from 'lucide-react';
+import { Send, MapPin, User, Mail, CheckCircle2, Navigation } from 'lucide-react';
+import { ImageUpload } from './ImageUpload';
 
 export function ReportForm() {
   const navigate = useNavigate();
@@ -33,6 +34,7 @@ export function ReportForm() {
     exactLocation: '',
     reporterName: '',
     reporterContact: '',
+    imageUrl: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,6 +61,7 @@ export function ReportForm() {
       area: formData.area,
       reporterName: formData.reporterName,
       reporterContact: formData.reporterContact,
+      imageUrl: formData.imageUrl || undefined,
     });
 
     if (id) {
@@ -115,6 +118,7 @@ export function ReportForm() {
                   exactLocation: '',
                   reporterName: '',
                   reporterContact: '',
+                  imageUrl: '',
                 });
               }}>
                 Report Another Issue
@@ -232,18 +236,13 @@ export function ReportForm() {
               )}
             </AnimatePresence>
 
-            {/* Image Upload (Placeholder) */}
+            {/* Image Upload */}
             <div className="space-y-2">
               <Label>Attach Photo (Optional)</Label>
-              <div className="border-2 border-dashed rounded-xl p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                <ImagePlus className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  Click to upload or drag and drop
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  PNG, JPG up to 5MB
-                </p>
-              </div>
+              <ImageUpload 
+                onImageUploaded={(url) => setFormData(prev => ({ ...prev, imageUrl: url }))}
+                currentImage={formData.imageUrl}
+              />
             </div>
 
             {/* Reporter Details */}
