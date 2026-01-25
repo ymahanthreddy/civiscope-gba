@@ -1,0 +1,30 @@
+// Bengaluru Areas with coordinates for map
+export const BENGALURU_AREAS = [
+  { name: 'Koramangala', coords: { lat: 12.9352, lng: 77.6245 } },
+  { name: 'Indiranagar', coords: { lat: 12.9784, lng: 77.6408 } },
+  { name: 'HSR Layout', coords: { lat: 12.9081, lng: 77.6476 } },
+  { name: 'Whitefield', coords: { lat: 12.9698, lng: 77.7500 } },
+  { name: 'Electronic City', coords: { lat: 12.8399, lng: 77.6770 } },
+  { name: 'Jayanagar', coords: { lat: 12.9308, lng: 77.5838 } },
+  { name: 'JP Nagar', coords: { lat: 12.9063, lng: 77.5857 } },
+  { name: 'BTM Layout', coords: { lat: 12.9166, lng: 77.6101 } },
+  { name: 'Marathahalli', coords: { lat: 12.9591, lng: 77.6974 } },
+  { name: 'Sarjapur Road', coords: { lat: 12.9107, lng: 77.6871 } },
+  { name: 'Banashankari', coords: { lat: 12.9255, lng: 77.5468 } },
+  { name: 'Malleshwaram', coords: { lat: 13.0035, lng: 77.5647 } },
+  { name: 'Rajajinagar', coords: { lat: 12.9910, lng: 77.5498 } },
+  { name: 'Basavanagudi', coords: { lat: 12.9435, lng: 77.5753 } },
+  { name: 'Vijayanagar', coords: { lat: 12.9701, lng: 77.5352 } },
+  { name: 'Yeshwanthpur', coords: { lat: 13.0294, lng: 77.5407 } },
+  { name: 'Hebbal', coords: { lat: 13.0358, lng: 77.5970 } },
+  { name: 'Yelahanka', coords: { lat: 13.1005, lng: 77.5960 } },
+  { name: 'KR Puram', coords: { lat: 12.9982, lng: 77.6960 } },
+  { name: 'Bellandur', coords: { lat: 12.9260, lng: 77.6762 } },
+  { name: 'Domlur', coords: { lat: 12.9610, lng: 77.6387 } },
+  { name: 'Richmond Town', coords: { lat: 12.9646, lng: 77.5992 } },
+  { name: 'MG Road', coords: { lat: 12.9756, lng: 77.6064 } },
+  { name: 'Brigade Road', coords: { lat: 12.9716, lng: 77.6072 } },
+  { name: 'Cubbon Park', coords: { lat: 12.9763, lng: 77.5929 } },
+] as const;
+
+export type BengaluruArea = typeof BENGALURU_AREAS[number]['name'];

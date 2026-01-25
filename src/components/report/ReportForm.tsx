@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,8 +15,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useIssues, IssueCategory } from '@/contexts/IssueContext';
 import { CATEGORY_CONFIG } from '@/lib/constants';
+import { BENGALURU_AREAS } from '@/lib/bengaluruAreas';
 import { toast } from '@/hooks/use-toast';
-import { Send, MapPin, User, Mail, ImagePlus, CheckCircle2 } from 'lucide-react';
+import { Send, MapPin, User, Mail, ImagePlus, CheckCircle2, Navigation } from 'lucide-react';
 
 export function ReportForm() {
   const navigate = useNavigate();
@@ -28,7 +29,8 @@ export function ReportForm() {
   const [formData, setFormData] = useState({
     category: '' as IssueCategory | '',
     description: '',
-    location: '',
+    area: '',
+    exactLocation: '',
     reporterName: '',
     reporterContact: '',
   });
@@ -36,7 +38,7 @@ export function ReportForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.category || !formData.description || !formData.location || !formData.reporterName || !formData.reporterContact) {
+    if (!formData.category || !formData.description || !formData.area || !formData.exactLocation || !formData.reporterName || !formData.reporterContact) {
       toast({
         title: 'Missing Information',
         description: 'Please fill in all required fields.',
@@ -47,10 +49,14 @@ export function ReportForm() {
 
     setIsSubmitting(true);
 
+    // Combine area and exact location
+    const fullLocation = `${formData.exactLocation}, ${formData.area}`;
+
     const id = await addIssue({
       category: formData.category as IssueCategory,
       description: formData.description,
-      location: formData.location,
+      location: fullLocation,
+      area: formData.area,
       reporterName: formData.reporterName,
       reporterContact: formData.reporterContact,
     });
@@ -105,7 +111,8 @@ export function ReportForm() {
                 setFormData({
                   category: '',
                   description: '',
-                  location: '',
+                  area: '',
+                  exactLocation: '',
                   reporterName: '',
                   reporterContact: '',
                 });
@@ -175,20 +182,55 @@ export function ReportForm() {
               />
             </div>
 
-            {/* Location */}
+            {/* Area Selection */}
             <div className="space-y-2">
-              <Label htmlFor="location">Location *</Label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="location"
-                  placeholder="Enter the location or landmark"
-                  value={formData.location}
-                  onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                  className="pl-10"
-                />
-              </div>
+              <Label htmlFor="area">Area in Bengaluru *</Label>
+              <Select
+                value={formData.area}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, area: value }))}
+              >
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Select your area" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover max-h-[300px]">
+                  {BENGALURU_AREAS.map((area) => (
+                    <SelectItem key={area.name} value={area.name}>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-primary" />
+                        <span>{area.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            {/* Exact Location - appears after area selection */}
+            <AnimatePresence>
+              {formData.area && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-2 overflow-hidden"
+                >
+                  <Label htmlFor="exactLocation">Exact Location / Landmark *</Label>
+                  <div className="relative">
+                    <Navigation className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="exactLocation"
+                      placeholder={`Enter specific location in ${formData.area}`}
+                      value={formData.exactLocation}
+                      onChange={(e) => setFormData(prev => ({ ...prev, exactLocation: e.target.value }))}
+                      className="pl-10"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    E.g., Near XYZ School, Opposite ABC Hospital, etc.
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Image Upload (Placeholder) */}
             <div className="space-y-2">
