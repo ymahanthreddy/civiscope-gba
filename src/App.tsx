@@ -9,7 +9,7 @@ import { AIChatbot } from "@/components/chatbot/AIChatbot";
 import Index from "./pages/Index";
 import ReportPage from "./pages/ReportPage";
 import TrackPage from "./pages/TrackPage";
-import AdminLoginPage from "./pages/AdminLoginPage";
+import AuthPage from "./pages/AuthPage";
 import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 
@@ -27,7 +27,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/report" element={<ReportPage />} />
               <Route path="/track" element={<TrackPage />} />
-              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/auth" element={<AuthPage />} />
               <Route path="/admin" element={<AdminPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
