@@ -2,25 +2,28 @@ import { Layout } from '@/components/layout/Layout';
 import { motion } from 'framer-motion';
 import { Users, Target, Heart, Lightbulb } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import member1Image from '@/assets/member1.jpg';
+import member2Image from '@/assets/member2.jpg';
+import member3Image from '@/assets/member3.jpg';
 
 const teamMembers = [
   {
     id: 1,
-    name: 'Member 1',
-    role: 'Role Title',
-    image: null, // Will be replaced with uploaded image
+    name: 'Naman Gupta',
+    role: 'Grade 11',
+    image: member1Image,
   },
   {
     id: 2,
-    name: 'Member 2',
-    role: 'Role Title',
-    image: null,
+    name: 'Mahanth Reddy',
+    role: 'Grade 8',
+    image: member2Image,
   },
   {
     id: 3,
     name: 'Member 3',
     role: 'Role Title',
-    image: null,
+    image: member3Image,
   },
 ];
 
