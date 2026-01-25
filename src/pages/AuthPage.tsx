@@ -323,29 +323,19 @@ export default function AuthPage() {
                 </AnimatePresence>
               </Tabs>
               
-              {/* Admin Quick Login */}
+              {/* Admin Portal Link */}
               <div className="mt-6 pt-6 border-t border-border/50">
                 <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-3">Admin Portal Access</p>
+                  <p className="text-sm text-muted-foreground mb-3">Are you an administrator?</p>
                   <Button
                     variant="outline"
                     size="sm"
                     className="w-full border-primary/30 hover:bg-primary/10 hover:border-primary transition-all"
-                    onClick={() => {
-                      setActiveTab('login');
-                      setLoginData({ email: 'admin@civiscope.com', password: 'admin123' });
-                      toast({
-                        title: 'Admin Credentials Loaded',
-                        description: 'Click Sign In to access the admin portal.',
-                      });
-                    }}
+                    onClick={() => navigate('/admin-login')}
                   >
                     <Shield className="w-4 h-4 mr-2" />
-                    Quick Admin Login
+                    Go to Admin Portal Login
                   </Button>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Email: admin@civiscope.com | Password: admin123
-                  </p>
                 </div>
               </div>
             </CardContent>

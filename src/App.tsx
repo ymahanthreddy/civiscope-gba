@@ -11,6 +11,7 @@ import ReportPage from "./pages/ReportPage";
 import TrackPage from "./pages/TrackPage";
 import AuthPage from "./pages/AuthPage";
 import AdminPage from "./pages/AdminPage";
+import AdminLoginPage from "./pages/AdminLoginPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
               <Route path="/report" element={<ReportPage />} />
               <Route path="/track" element={<TrackPage />} />
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/admin-login" element={<AdminLoginPage />} />
               <Route path="/admin" element={<AdminPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
