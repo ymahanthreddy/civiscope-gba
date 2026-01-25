@@ -14,7 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      issues: {
+        Row: {
+          assigned_to: string | null
+          category: Database["public"]["Enums"]["issue_category"]
+          closed_at: string | null
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          location: string
+          reporter_contact: string
+          reporter_name: string
+          resolution_image: string | null
+          resolution_notes: string | null
+          status: Database["public"]["Enums"]["issue_status"]
+          tracking_id: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category: Database["public"]["Enums"]["issue_category"]
+          closed_at?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          location: string
+          reporter_contact: string
+          reporter_name: string
+          resolution_image?: string | null
+          resolution_notes?: string | null
+          status?: Database["public"]["Enums"]["issue_status"]
+          tracking_id: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: Database["public"]["Enums"]["issue_category"]
+          closed_at?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          location?: string
+          reporter_contact?: string
+          reporter_name?: string
+          resolution_image?: string | null
+          resolution_notes?: string | null
+          status?: Database["public"]["Enums"]["issue_status"]
+          tracking_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      officials: {
+        Row: {
+          created_at: string
+          department: string
+          email: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          department: string
+          email?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          department?: string
+          email?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +100,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      issue_category:
+        | "garbage"
+        | "roads"
+        | "drainage"
+        | "streetlights"
+        | "parks"
+        | "stray_dogs"
+      issue_status: "reported" | "assigned" | "in_progress" | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +234,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      issue_category: [
+        "garbage",
+        "roads",
+        "drainage",
+        "streetlights",
+        "parks",
+        "stray_dogs",
+      ],
+      issue_status: ["reported", "assigned", "in_progress", "closed"],
+    },
   },
 } as const
