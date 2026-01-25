@@ -268,17 +268,18 @@ export function HeroSection() {
                     </Pie>
                     <Tooltip 
                       contentStyle={{
-                        background: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
+                        backgroundColor: 'white',
+                        border: '1px solid #e2e8f0',
                         borderRadius: '12px',
-                        boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-                        color: 'hsl(var(--foreground))',
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+                        padding: '8px 12px',
                       }}
                       itemStyle={{
-                        color: 'hsl(var(--foreground))',
+                        color: '#1f2937',
                       }}
                       labelStyle={{
-                        color: 'hsl(var(--foreground))',
+                        color: '#1f2937',
+                        fontWeight: 600,
                       }}
                       formatter={(value: number) => [`${value}%`, 'Issues']}
                     />
