@@ -30,24 +30,24 @@ import {
   Calendar, 
   User,
   AlertTriangle,
-  ChevronRight,
   CheckCircle2,
   Clock,
   ImagePlus
 } from 'lucide-react';
 
 export function IssueManagement() {
-  const { issues, officials, assignIssue, updateIssueStatus, closeIssue } = useIssues();
+  const { issues, officials, loading, assignIssue, updateIssueStatus, closeIssue } = useIssues();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [isClosing, setIsClosing] = useState(false);
   const [closureNote, setClosureNote] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const filteredIssues = issues.filter(issue => {
     const matchesSearch = 
-      issue.trackingId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      issue.tracking_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       issue.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
       issue.description.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -57,43 +57,43 @@ export function IssueManagement() {
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
-  const getDaysElapsed = (date: Date) => {
-    const diff = Date.now() - new Date(date).getTime();
+  const getDaysElapsed = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   };
 
   const isEscalated = (issue: Issue) => {
-    return issue.status !== 'closed' && getDaysElapsed(issue.createdAt) > 3;
+    return issue.status !== 'closed' && getDaysElapsed(issue.created_at) > 3;
   };
 
-  const handleAssign = (issueId: string, officialId: string) => {
-    assignIssue(issueId, officialId);
-    toast({
-      title: 'Issue Assigned',
-      description: 'The issue has been assigned to the selected official.',
-    });
+  const handleAssign = async (issueId: string, officialName: string) => {
+    await assignIssue(issueId, officialName);
   };
 
-  const handleStatusUpdate = (issueId: string, status: IssueStatus) => {
-    updateIssueStatus(issueId, status, `Status updated to ${STATUS_CONFIG[status].label}`);
-    toast({
-      title: 'Status Updated',
-      description: `Issue status changed to ${STATUS_CONFIG[status].label}`,
-    });
+  const handleStatusUpdate = async (issueId: string, status: IssueStatus) => {
+    await updateIssueStatus(issueId, status);
   };
 
-  const handleCloseIssue = () => {
+  const handleCloseIssue = async () => {
     if (selectedIssue && closureNote) {
-      closeIssue(selectedIssue.id, '/placeholder.svg', closureNote);
-      setIsClosing(false);
-      setSelectedIssue(null);
-      setClosureNote('');
-      toast({
-        title: 'Issue Closed ✅',
-        description: 'The issue has been marked as resolved.',
-      });
+      setIsSubmitting(true);
+      const success = await closeIssue(selectedIssue.id, closureNote);
+      if (success) {
+        setIsClosing(false);
+        setSelectedIssue(null);
+        setClosureNote('');
+      }
+      setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -150,7 +150,9 @@ export function IssueManagement() {
       <div className="space-y-4">
         {filteredIssues.map((issue, i) => {
           const escalated = isEscalated(issue);
-          const days = getDaysElapsed(issue.createdAt);
+          const days = getDaysElapsed(issue.created_at);
+          const categoryKey = issue.category as keyof typeof CATEGORY_CONFIG;
+          const statusKey = issue.status as keyof typeof STATUS_CONFIG;
           
           return (
             <motion.div
@@ -165,16 +167,16 @@ export function IssueManagement() {
                     {/* Issue Info */}
                     <div className="flex-1">
                       <div className="flex items-start gap-3 mb-3">
-                        <div className={`w-12 h-12 rounded-xl ${CATEGORY_CONFIG[issue.category].bgColor} flex items-center justify-center text-2xl`}>
-                          {CATEGORY_CONFIG[issue.category].icon}
+                        <div className={`w-12 h-12 rounded-xl ${CATEGORY_CONFIG[categoryKey]?.bgColor || 'bg-muted'} flex items-center justify-center text-2xl`}>
+                          {CATEGORY_CONFIG[categoryKey]?.icon || '📋'}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-mono font-bold text-primary">{issue.trackingId}</span>
+                            <span className="font-mono font-bold text-primary">{issue.tracking_id}</span>
                             <Badge 
-                              className={`${STATUS_CONFIG[issue.status].bgColor} ${STATUS_CONFIG[issue.status].color} ${STATUS_CONFIG[issue.status].borderColor} border`}
+                              className={`${STATUS_CONFIG[statusKey]?.bgColor} ${STATUS_CONFIG[statusKey]?.color} ${STATUS_CONFIG[statusKey]?.borderColor} border`}
                             >
-                              {STATUS_CONFIG[issue.status].label}
+                              {STATUS_CONFIG[statusKey]?.label || issue.status}
                             </Badge>
                             {escalated && (
                               <Badge variant="destructive" className="animate-pulse">
@@ -196,7 +198,7 @@ export function IssueManagement() {
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          {new Date(issue.createdAt).toLocaleDateString('en-IN')}
+                          {new Date(issue.created_at).toLocaleDateString('en-IN')}
                         </span>
                         <span className={`flex items-center gap-1 ${escalated ? 'text-destructive font-medium' : ''}`}>
                           <Clock className="w-4 h-4" />
@@ -211,7 +213,7 @@ export function IssueManagement() {
                         <>
                           {/* Assign Dropdown */}
                           <Select
-                            value={issue.assignedTo || ''}
+                            value={issue.assigned_to || ''}
                             onValueChange={(value) => handleAssign(issue.id, value)}
                           >
                             <SelectTrigger className="w-full sm:w-[160px] bg-background">
@@ -220,7 +222,7 @@ export function IssueManagement() {
                             </SelectTrigger>
                             <SelectContent className="bg-popover">
                               {officials.map((official) => (
-                                <SelectItem key={official.id} value={official.id}>
+                                <SelectItem key={official.id} value={official.name}>
                                   {official.name}
                                 </SelectItem>
                               ))}
@@ -293,7 +295,7 @@ export function IssueManagement() {
           
           <div className="space-y-4">
             <div>
-              <p className="text-sm font-medium mb-2">Issue: {selectedIssue?.trackingId}</p>
+              <p className="text-sm font-medium mb-2">Issue: {selectedIssue?.tracking_id}</p>
               <p className="text-sm text-muted-foreground">{selectedIssue?.description}</p>
             </div>
             
@@ -323,9 +325,13 @@ export function IssueManagement() {
             <Button 
               className="bg-success hover:bg-success/90"
               onClick={handleCloseIssue}
-              disabled={!closureNote}
+              disabled={!closureNote || isSubmitting}
             >
-              <CheckCircle2 className="w-4 h-4 mr-2" />
+              {isSubmitting ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+              )}
               Mark as Resolved
             </Button>
           </DialogFooter>

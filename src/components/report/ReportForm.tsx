@@ -46,11 +46,8 @@ export function ReportForm() {
     }
 
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
 
-    const id = addIssue({
+    const id = await addIssue({
       category: formData.category as IssueCategory,
       description: formData.description,
       location: formData.location,
@@ -58,14 +55,12 @@ export function ReportForm() {
       reporterContact: formData.reporterContact,
     });
 
-    setTrackingId(id);
-    setSubmitted(true);
+    if (id) {
+      setTrackingId(id);
+      setSubmitted(true);
+    }
+    
     setIsSubmitting(false);
-
-    toast({
-      title: 'Issue Reported Successfully! 🎉',
-      description: `Your tracking ID is ${id}`,
-    });
   };
 
   if (submitted) {
@@ -90,7 +85,7 @@ export function ReportForm() {
               Issue Reported Successfully!
             </h2>
             <p className="text-muted-foreground mb-6">
-              Thank you for helping us improve Bengaluru
+              Thank you for helping us improve your community
             </p>
 
             <div className="bg-muted rounded-xl p-6 mb-6">
@@ -134,7 +129,7 @@ export function ReportForm() {
         <CardHeader className="text-center pb-2">
           <CardTitle className="font-display text-2xl">Report a Civic Issue</CardTitle>
           <CardDescription>
-            Help us make Bengaluru better. No login required.
+            Help us make your community better. No login required.
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -32,7 +32,7 @@ const GRADIENT_COLORS = [
 ];
 
 export function AdminDashboard() {
-  const { issues, officials } = useIssues();
+  const { issues, officials, loading } = useIssues();
 
   const stats = useMemo(() => {
     const total = issues.length;
@@ -40,7 +40,7 @@ export function AdminDashboard() {
     const pending = issues.filter(i => i.status !== 'closed').length;
     const escalated = issues.filter(i => {
       if (i.status === 'closed') return false;
-      const days = (Date.now() - new Date(i.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+      const days = (Date.now() - new Date(i.created_at).getTime()) / (1000 * 60 * 60 * 24);
       return days > 3;
     }).length;
 
@@ -76,6 +76,14 @@ export function AdminDashboard() {
       resolved: Math.floor(Math.random() * 25) + 5,
     }));
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const statCards = [
     { 
@@ -396,8 +404,10 @@ export function AdminDashboard() {
                 </thead>
                 <tbody>
                   {issues.slice(0, 5).map((issue, index) => {
-                    const days = Math.floor((Date.now() - new Date(issue.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+                    const days = Math.floor((Date.now() - new Date(issue.created_at).getTime()) / (1000 * 60 * 60 * 24));
                     const isEscalated = issue.status !== 'closed' && days > 3;
+                    const categoryKey = issue.category as keyof typeof CATEGORY_CONFIG;
+                    const statusKey = issue.status as keyof typeof STATUS_CONFIG;
                     
                     return (
                       <motion.tr 
@@ -407,11 +417,11 @@ export function AdminDashboard() {
                         transition={{ delay: 0.7 + index * 0.1 }}
                         className={`border-b border-border/30 hover:bg-muted/50 transition-colors ${isEscalated ? 'bg-destructive/5' : ''}`}
                       >
-                        <td className="py-3 px-4 font-mono text-sm font-medium text-primary">{issue.trackingId}</td>
+                        <td className="py-3 px-4 font-mono text-sm font-medium text-primary">{issue.tracking_id}</td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2">
-                            <span className="text-lg">{CATEGORY_CONFIG[issue.category].icon}</span>
-                            <span className="text-sm">{CATEGORY_CONFIG[issue.category].label}</span>
+                            <span className="text-lg">{CATEGORY_CONFIG[categoryKey]?.icon || '📋'}</span>
+                            <span className="text-sm">{CATEGORY_CONFIG[categoryKey]?.label || issue.category}</span>
                           </div>
                         </td>
                         <td className="py-3 px-4 text-sm text-muted-foreground max-w-[200px] truncate">
@@ -419,9 +429,9 @@ export function AdminDashboard() {
                         </td>
                         <td className="py-3 px-4">
                           <Badge 
-                            className={`${STATUS_CONFIG[issue.status].bgColor} ${STATUS_CONFIG[issue.status].color} ${STATUS_CONFIG[issue.status].borderColor} border`}
+                            className={`${STATUS_CONFIG[statusKey]?.bgColor} ${STATUS_CONFIG[statusKey]?.color} ${STATUS_CONFIG[statusKey]?.borderColor} border`}
                           >
-                            {STATUS_CONFIG[issue.status].label}
+                            {STATUS_CONFIG[statusKey]?.label || issue.status}
                           </Badge>
                         </td>
                         <td className={`py-3 px-4 text-sm font-medium ${isEscalated ? 'text-destructive' : ''}`}>
