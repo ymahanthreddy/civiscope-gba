@@ -165,7 +165,12 @@ export type Database = {
         | "streetlights"
         | "parks"
         | "stray_dogs"
-      issue_status: "reported" | "assigned" | "in_progress" | "closed"
+      issue_status:
+        | "reported"
+        | "assigned"
+        | "in_progress"
+        | "closed"
+        | "escalated"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -302,7 +307,13 @@ export const Constants = {
         "parks",
         "stray_dogs",
       ],
-      issue_status: ["reported", "assigned", "in_progress", "closed"],
+      issue_status: [
+        "reported",
+        "assigned",
+        "in_progress",
+        "closed",
+        "escalated",
+      ],
     },
   },
 } as const

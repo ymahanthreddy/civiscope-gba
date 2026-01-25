@@ -51,7 +51,7 @@ export const CATEGORY_CONFIG: Record<IssueCategory, {
   },
 };
 
-export const STATUS_CONFIG: Record<IssueStatus, {
+export const STATUS_CONFIG: Record<IssueStatus | 'escalated', {
   label: string;
   color: string;
   bgColor: string;
@@ -80,6 +80,12 @@ export const STATUS_CONFIG: Record<IssueStatus, {
     color: 'text-emerald-700',
     bgColor: 'bg-emerald-50',
     borderColor: 'border-emerald-200',
+  },
+  escalated: {
+    label: 'Escalated',
+    color: 'text-red-700',
+    bgColor: 'bg-red-50',
+    borderColor: 'border-red-200',
   },
 };
 

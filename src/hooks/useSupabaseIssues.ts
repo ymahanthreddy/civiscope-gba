@@ -5,7 +5,7 @@ import { toast } from '@/hooks/use-toast';
 
 export type Issue = Tables<'issues'>;
 export type Official = Tables<'officials'>;
-export type IssueStatus = 'reported' | 'assigned' | 'in_progress' | 'closed';
+export type IssueStatus = 'reported' | 'assigned' | 'in_progress' | 'closed' | 'escalated';
 export type IssueCategory = 'garbage' | 'roads' | 'drainage' | 'streetlights' | 'parks' | 'stray_dogs';
 
 export function useSupabaseIssues() {
@@ -210,6 +210,30 @@ export function useSupabaseIssues() {
     return true;
   };
 
+  const escalateIssue = async (id: string): Promise<boolean> => {
+    const { error } = await supabase
+      .from('issues')
+      .update({ status: 'escalated' as IssueStatus })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error escalating issue:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to escalate issue',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    toast({
+      title: 'Issue Escalated! ⚠️',
+      description: 'This issue has been marked for urgent attention',
+    });
+
+    return true;
+  };
+
   return {
     issues,
     officials,
@@ -219,6 +243,7 @@ export function useSupabaseIssues() {
     updateIssueStatus,
     assignIssue,
     closeIssue,
+    escalateIssue,
     refetch: fetchIssues,
   };
 }

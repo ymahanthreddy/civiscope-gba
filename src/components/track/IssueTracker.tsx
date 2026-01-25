@@ -15,16 +15,19 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  MessageSquare
+  MessageSquare,
+  AlertTriangle,
+  Flame
 } from 'lucide-react';
 
 export function IssueTracker() {
   const [searchParams] = useSearchParams();
-  const { getIssueByTrackingId } = useIssues();
+  const { getIssueByTrackingId, escalateIssue } = useIssues();
   const [trackingId, setTrackingId] = useState(searchParams.get('id') || '');
   const [issue, setIssue] = useState<Issue | null>(null);
   const [searched, setSearched] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [isEscalating, setIsEscalating] = useState(false);
 
   useEffect(() => {
     const idFromParams = searchParams.get('id');
@@ -48,7 +51,20 @@ export function IssueTracker() {
     await handleSearchById(trackingId);
   };
 
+  const handleEscalate = async () => {
+    if (!issue) return;
+    setIsEscalating(true);
+    const success = await escalateIssue(issue.id);
+    if (success) {
+      // Refresh the issue
+      const updated = await getIssueByTrackingId(issue.tracking_id);
+      setIssue(updated);
+    }
+    setIsEscalating(false);
+  };
+
   const getStatusIndex = (status: string) => {
+    if (status === 'escalated') return -1; // Escalated is separate
     return WORKFLOW_STEPS.findIndex(s => s.status === status);
   };
 
@@ -57,12 +73,13 @@ export function IssueTracker() {
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   };
 
-  const isEscalated = (issue: Issue) => {
-    return issue.status !== 'closed' && getDaysElapsed(issue.created_at) > 3;
+  const isPendingLong = (issue: Issue) => {
+    return issue.status !== 'closed' && issue.status !== 'escalated' && getDaysElapsed(issue.created_at) > 3;
   };
 
   const categoryKey = issue?.category as keyof typeof CATEGORY_CONFIG;
   const statusKey = issue?.status as keyof typeof STATUS_CONFIG;
+  const isEscalated = issue?.status === 'escalated';
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -113,18 +130,55 @@ export function IssueTracker() {
           animate={{ opacity: 1, y: 0 }}
         >
           {issue ? (
-            <Card className={`shadow-xl ${isEscalated(issue) ? 'border-2 border-destructive/50' : ''}`}>
+            <Card className={`shadow-xl ${isEscalated ? 'border-2 border-destructive ring-2 ring-destructive/20' : isPendingLong(issue) ? 'border-2 border-amber-500/50' : ''}`}>
               <CardContent className="pt-6">
-                {/* Escalation Warning */}
-                {isEscalated(issue) && (
-                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-6 flex items-center gap-3">
-                    <AlertCircle className="w-5 h-5 text-destructive" />
-                    <div>
-                      <p className="font-medium text-destructive">Issue Escalated</p>
-                      <p className="text-sm text-destructive/80">
-                        This issue has been pending for more than 3 days
-                      </p>
+                {/* Escalated Status */}
+                {isEscalated && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-destructive/30 rounded-xl p-5 mb-6"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-destructive/20 flex items-center justify-center">
+                        <Flame className="w-6 h-6 text-destructive animate-pulse" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-destructive text-lg">Issue Escalated</p>
+                        <p className="text-sm text-destructive/80">
+                          This issue has been escalated for urgent attention by authorities
+                        </p>
+                      </div>
                     </div>
+                  </motion.div>
+                )}
+
+                {/* Pending Long Warning */}
+                {isPendingLong(issue) && !isEscalated && (
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mb-6 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <AlertTriangle className="w-5 h-5 text-amber-600" />
+                      <div>
+                        <p className="font-medium text-amber-700">Issue Pending for {getDaysElapsed(issue.created_at)} Days</p>
+                        <p className="text-sm text-amber-600/80">
+                          Consider escalating if you need urgent attention
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleEscalate}
+                      disabled={isEscalating}
+                      className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white shadow-lg"
+                    >
+                      {isEscalating ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Flame className="w-4 h-4 mr-2" />
+                          Escalate
+                        </>
+                      )}
+                    </Button>
                   </div>
                 )}
 
@@ -146,42 +200,44 @@ export function IssueTracker() {
                   </Badge>
                 </div>
 
-                {/* Progress Workflow */}
-                <div className="mb-8">
-                  <div className="flex justify-between relative">
-                    {/* Progress Line */}
-                    <div className="absolute top-4 left-0 right-0 h-1 bg-muted">
-                      <div 
-                        className="h-full bg-primary transition-all duration-500"
-                        style={{ width: `${(getStatusIndex(issue.status) / (WORKFLOW_STEPS.length - 1)) * 100}%` }}
-                      />
-                    </div>
-                    
-                    {WORKFLOW_STEPS.map((step, i) => {
-                      const isComplete = i <= getStatusIndex(issue.status);
-                      const isCurrent = i === getStatusIndex(issue.status);
+                {/* Progress Workflow - Hide if escalated */}
+                {!isEscalated && (
+                  <div className="mb-8">
+                    <div className="flex justify-between relative">
+                      {/* Progress Line */}
+                      <div className="absolute top-4 left-0 right-0 h-1 bg-muted">
+                        <div 
+                          className="h-full bg-primary transition-all duration-500"
+                          style={{ width: `${(getStatusIndex(issue.status) / (WORKFLOW_STEPS.length - 1)) * 100}%` }}
+                        />
+                      </div>
                       
-                      return (
-                        <div key={step.status} className="flex flex-col items-center relative z-10">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                            isComplete 
-                              ? 'bg-primary text-primary-foreground' 
-                              : 'bg-muted text-muted-foreground'
-                          } ${isCurrent ? 'ring-4 ring-primary/20' : ''}`}>
-                            {isComplete ? (
-                              <CheckCircle2 className="w-5 h-5" />
-                            ) : (
-                              <span className="text-sm">{i + 1}</span>
-                            )}
+                      {WORKFLOW_STEPS.map((step, i) => {
+                        const isComplete = i <= getStatusIndex(issue.status);
+                        const isCurrent = i === getStatusIndex(issue.status);
+                        
+                        return (
+                          <div key={step.status} className="flex flex-col items-center relative z-10">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                              isComplete 
+                                ? 'bg-primary text-primary-foreground' 
+                                : 'bg-muted text-muted-foreground'
+                            } ${isCurrent ? 'ring-4 ring-primary/20' : ''}`}>
+                              {isComplete ? (
+                                <CheckCircle2 className="w-5 h-5" />
+                              ) : (
+                                <span className="text-sm">{i + 1}</span>
+                              )}
+                            </div>
+                            <p className={`text-xs mt-2 font-medium ${isComplete ? 'text-foreground' : 'text-muted-foreground'}`}>
+                              {step.label}
+                            </p>
                           </div>
-                          <p className={`text-xs mt-2 font-medium ${isComplete ? 'text-foreground' : 'text-muted-foreground'}`}>
-                            {step.label}
-                          </p>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -240,12 +296,39 @@ export function IssueTracker() {
                   </div>
                 )}
 
+                {/* Escalate Button for non-escalated issues */}
+                {!isEscalated && issue.status !== 'closed' && !isPendingLong(issue) && (
+                  <div className="mt-6 pt-6 border-t border-border/50">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Not getting attention?</p>
+                        <p className="text-sm font-medium">Escalate to mark as urgent</p>
+                      </div>
+                      <Button
+                        onClick={handleEscalate}
+                        disabled={isEscalating}
+                        variant="outline"
+                        className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        {isEscalating ? (
+                          <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                        ) : (
+                          <>
+                            <Flame className="w-4 h-4 mr-2" />
+                            Escalate Issue
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Closure Status */}
                 {issue.status === 'closed' && issue.closed_at && (
-                  <div className="mt-6 p-4 bg-success/5 border border-success/20 rounded-lg">
+                  <div className="mt-6 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
-                      <CheckCircle2 className="w-5 h-5 text-success" />
-                      <span className="font-medium text-success">Issue Resolved</span>
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                      <span className="font-medium text-emerald-600">Issue Resolved</span>
                     </div>
                     <p className="text-sm text-muted-foreground">
                       Closed on {new Date(issue.closed_at).toLocaleDateString('en-IN')}
