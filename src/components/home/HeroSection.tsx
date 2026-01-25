@@ -272,6 +272,13 @@ export function HeroSection() {
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '12px',
                         boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                        color: 'hsl(var(--foreground))',
+                      }}
+                      itemStyle={{
+                        color: 'hsl(var(--foreground))',
+                      }}
+                      labelStyle={{
+                        color: 'hsl(var(--foreground))',
                       }}
                       formatter={(value: number) => [`${value}%`, 'Issues']}
                     />
