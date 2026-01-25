@@ -129,8 +129,9 @@ export default function AdminLoginPage() {
               </div>
 
               <div className="bg-muted/50 rounded-lg p-3 text-sm">
-                <p className="font-medium text-foreground mb-1">Admin Access:</p>
-                <p className="text-muted-foreground">Enter your admin credentials to access the portal.</p>
+                <p className="font-medium text-foreground mb-1">Demo Credentials:</p>
+                <p className="text-muted-foreground">Email: <span className="font-mono text-foreground">admin@civiscope.com</span></p>
+                <p className="text-muted-foreground">Password: <span className="font-mono text-foreground">admin123</span></p>
               </div>
 
               <Button
