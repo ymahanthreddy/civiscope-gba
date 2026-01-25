@@ -21,8 +21,8 @@ const teamMembers = [
   },
   {
     id: 3,
-    name: 'Member 3',
-    role: 'Role Title',
+    name: 'Dhruva Mandavilli',
+    role: 'Grade 10',
     image: member3Image,
   },
 ];
