@@ -38,8 +38,11 @@ export function StatsSection() {
 
   return (
     <section className="py-20 px-4 relative overflow-hidden">
+      {/* Smooth transition gradient from hero */}
+      <div className="absolute -top-32 left-0 right-0 h-32 bg-gradient-to-b from-slate-900 to-transparent pointer-events-none" />
+      
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/30 to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-background to-background" />
       <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
       <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl" />
 

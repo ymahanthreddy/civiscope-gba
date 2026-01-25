@@ -68,7 +68,7 @@ export function CTASection() {
               </Link>
               <Link to="/track">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-6">
+                  <Button size="lg" className="bg-white/20 backdrop-blur-md border border-white/40 text-white hover:bg-white/30 text-lg px-8 py-6 shadow-lg font-semibold">
                     Track Your Issue
                   </Button>
                 </motion.div>

@@ -102,7 +102,7 @@ export function HeroSection() {
               </Link>
               <Link to="/track">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button size="lg" variant="outline" className="border-slate-600 text-white hover:bg-white/10 text-lg px-8 py-6 backdrop-blur-sm group">
+                  <Button size="lg" className="bg-white/15 backdrop-blur-md border border-white/30 text-white hover:bg-white/25 text-lg px-8 py-6 shadow-lg group">
                     <Play className="mr-2 w-5 h-5" />
                     Track Progress
                   </Button>
