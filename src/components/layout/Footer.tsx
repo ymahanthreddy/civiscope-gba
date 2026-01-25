@@ -35,7 +35,7 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4 text-foreground">Contact</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Helpline: 1800-XXX-XXXX</li>
+              <li>Helpline: +91-9483410461</li>
               <li>Email: support@civiscope.in</li>
               <li>Head Office, Bengaluru</li>
             </ul>
