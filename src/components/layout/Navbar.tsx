@@ -40,7 +40,7 @@ export function Navbar() {
     <motion.nav 
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="sticky top-0 z-50 glass-card border-b backdrop-blur-xl"
+      className="sticky top-0 z-50 bg-background/60 backdrop-blur-2xl border-b border-border/40 shadow-sm"
     >
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
