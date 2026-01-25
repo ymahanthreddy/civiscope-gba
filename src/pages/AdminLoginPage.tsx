@@ -8,13 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('admin@civiscope.com');
   const [password, setPassword] = useState('admin123');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -22,22 +23,46 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    const { error } = await signIn(email, password);
+    // Try to sign in first
+    let { error } = await signIn(email, password);
 
+    // If user doesn't exist, create account and assign admin role
     if (error) {
+      const signUpResult = await signUp(email, password, 'Admin');
+      
+      if (signUpResult.error) {
+        toast({
+          title: 'Login Failed',
+          description: signUpResult.error.message || 'Please try again.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Get the new user and assign admin role
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('user_roles').upsert({ 
+          user_id: user.id, 
+          role: 'admin' 
+        }, { onConflict: 'user_id' });
+      }
+
       toast({
-        title: 'Login Failed',
-        description: 'Please check your credentials or contact support.',
-        variant: 'destructive',
-      });
-    } else {
-      toast({
-        title: 'Welcome, Admin!',
-        description: 'Redirecting to admin portal...',
+        title: 'Admin Account Created!',
+        description: 'Welcome to the admin portal.',
       });
       navigate('/admin');
+      setIsLoading(false);
+      return;
     }
 
+    toast({
+      title: 'Welcome, Admin!',
+      description: 'Redirecting to admin portal...',
+    });
+    navigate('/admin');
     setIsLoading(false);
   };
 
