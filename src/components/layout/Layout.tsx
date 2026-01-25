@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
+import { AnimatedBackground } from './AnimatedBackground';
 
 interface LayoutProps {
   children: ReactNode;
@@ -9,7 +10,8 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background relative">
+      <AnimatedBackground />
       <Navbar />
       <motion.main 
         initial={{ opacity: 0 }}
