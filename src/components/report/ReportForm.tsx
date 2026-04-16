@@ -180,10 +180,13 @@ export function ReportForm() {
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">Description *</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="description">Description *</Label>
+                <SpeechToText onTranscript={(text) => setFormData(prev => ({ ...prev, description: prev.description ? prev.description + ' ' + text : text }))} />
+              </div>
               <Textarea
                 id="description"
-                placeholder="Describe the issue in detail..."
+                placeholder="Describe the issue in detail or use the mic to speak..."
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 rows={4}
