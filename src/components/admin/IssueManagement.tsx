@@ -6,39 +6,25 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
 import { useIssues, Issue, IssueStatus } from '@/contexts/IssueContext';
+import { useWorkers } from '@/hooks/useWorkers';
 import { CATEGORY_CONFIG, STATUS_CONFIG } from '@/lib/constants';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { 
-  Search, 
-  Filter, 
-  MapPin, 
-  Calendar, 
-  User,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  ImagePlus,
-  Flame,
-  Mail
+  Search, Filter, MapPin, Calendar, User, AlertTriangle, CheckCircle2, Clock,
+  ImagePlus, Flame, Mail, Timer
 } from 'lucide-react';
 
 export function IssueManagement() {
-  const { issues, officials, loading, assignIssue, updateIssueStatus, closeIssue, refetch } = useIssues();
+  const { issues, loading, assignIssue, updateIssueStatus, closeIssue, refetch } = useIssues();
+  const { getApprovedWorkers } = useWorkers();
+  const approvedWorkers = getApprovedWorkers();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
