@@ -19,6 +19,7 @@ import { BENGALURU_AREAS } from '@/lib/bengaluruAreas';
 import { toast } from '@/hooks/use-toast';
 import { Send, MapPin, User, Mail, CheckCircle2, Navigation, Sparkles } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
+import { SpeechToText } from './SpeechToText';
 
 export function ReportForm() {
   const navigate = useNavigate();
@@ -179,10 +180,13 @@ export function ReportForm() {
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">Description *</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="description">Description *</Label>
+                <SpeechToText onTranscript={(text) => setFormData(prev => ({ ...prev, description: prev.description ? prev.description + ' ' + text : text }))} />
+              </div>
               <Textarea
                 id="description"
-                placeholder="Describe the issue in detail..."
+                placeholder="Describe the issue in detail or use the mic to speak..."
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 rows={4}
@@ -222,7 +226,10 @@ export function ReportForm() {
                   exit={{ opacity: 0, height: 0 }}
                   className="space-y-2 overflow-hidden"
                 >
-                  <Label htmlFor="exactLocation">Exact Location / Landmark *</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="exactLocation">Exact Location / Landmark *</Label>
+                    <SpeechToText onTranscript={(text) => setFormData(prev => ({ ...prev, exactLocation: prev.exactLocation ? prev.exactLocation + ' ' + text : text }))} />
+                  </div>
                   <div className="relative">
                     <Navigation className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                     <Input
