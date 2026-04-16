@@ -280,19 +280,22 @@ export function IssueManagement() {
                         <>
                           {/* Assign Dropdown */}
                           <Select
-                            value={issue.assigned_to || ''}
+                            value={issue.assigned_worker_id || issue.assigned_to || ''}
                             onValueChange={(value) => handleAssign(issue.id, value)}
                           >
-                            <SelectTrigger className="w-full sm:w-[160px] bg-background">
+                            <SelectTrigger className="w-full sm:w-[180px] bg-background">
                               <User className="w-4 h-4 mr-2" />
-                              <SelectValue placeholder="Assign to..." />
+                              <SelectValue placeholder="Assign worker..." />
                             </SelectTrigger>
                             <SelectContent className="bg-popover">
-                              {officials.map((official) => (
-                                <SelectItem key={official.id} value={official.name}>
-                                  {official.name}
+                              {approvedWorkers.map((worker) => (
+                                <SelectItem key={worker.id} value={worker.user_id}>
+                                  {worker.full_name || 'Unknown'} ({worker.department})
                                 </SelectItem>
                               ))}
+                              {approvedWorkers.length === 0 && (
+                                <div className="px-3 py-2 text-sm text-muted-foreground">No approved workers</div>
+                              )}
                             </SelectContent>
                           </Select>
 
