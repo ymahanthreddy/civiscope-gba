@@ -13,13 +13,13 @@ import AuthPage from "./pages/AuthPage";
 import AdminPage from "./pages/AdminPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import UserDashboard from "./pages/UserDashboard";
+import WorkerPortal from "./pages/WorkerPortal";
 import SettingsPage from "./pages/SettingsPage";
 import AboutPage from "./pages/AboutPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Application root component
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -37,8 +37,8 @@ const App = () => (
               <Route path="/admin-login" element={<AdminLoginPage />} />
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/dashboard" element={<UserDashboard />} />
+              <Route path="/worker" element={<WorkerPortal />} />
               <Route path="/settings" element={<SettingsPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      issue_comments: {
+        Row: {
+          comment: string
+          comment_type: string
+          created_at: string
+          id: string
+          issue_id: string
+          user_id: string | null
+          user_name: string
+        }
+        Insert: {
+          comment: string
+          comment_type?: string
+          created_at?: string
+          id?: string
+          issue_id: string
+          user_id?: string | null
+          user_name: string
+        }
+        Update: {
+          comment?: string
+          comment_type?: string
+          created_at?: string
+          id?: string
+          issue_id?: string
+          user_id?: string | null
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_comments_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issue_likes: {
         Row: {
           created_at: string
@@ -50,6 +88,7 @@ export type Database = {
         Row: {
           area: string | null
           assigned_to: string | null
+          assigned_worker_id: string | null
           category: Database["public"]["Enums"]["issue_category"]
           closed_at: string | null
           created_at: string
@@ -58,10 +97,13 @@ export type Database = {
           image_url: string | null
           likes_count: number | null
           location: string
+          priority: Database["public"]["Enums"]["issue_priority"] | null
           reporter_contact: string
           reporter_name: string
           resolution_image: string | null
           resolution_notes: string | null
+          satisfaction_rating: number | null
+          sla_deadline: string | null
           status: Database["public"]["Enums"]["issue_status"]
           tracking_id: string
           updated_at: string
@@ -70,6 +112,7 @@ export type Database = {
         Insert: {
           area?: string | null
           assigned_to?: string | null
+          assigned_worker_id?: string | null
           category: Database["public"]["Enums"]["issue_category"]
           closed_at?: string | null
           created_at?: string
@@ -78,10 +121,13 @@ export type Database = {
           image_url?: string | null
           likes_count?: number | null
           location: string
+          priority?: Database["public"]["Enums"]["issue_priority"] | null
           reporter_contact: string
           reporter_name: string
           resolution_image?: string | null
           resolution_notes?: string | null
+          satisfaction_rating?: number | null
+          sla_deadline?: string | null
           status?: Database["public"]["Enums"]["issue_status"]
           tracking_id: string
           updated_at?: string
@@ -90,6 +136,7 @@ export type Database = {
         Update: {
           area?: string | null
           assigned_to?: string | null
+          assigned_worker_id?: string | null
           category?: Database["public"]["Enums"]["issue_category"]
           closed_at?: string | null
           created_at?: string
@@ -98,10 +145,13 @@ export type Database = {
           image_url?: string | null
           likes_count?: number | null
           location?: string
+          priority?: Database["public"]["Enums"]["issue_priority"] | null
           reporter_contact?: string
           reporter_name?: string
           resolution_image?: string | null
           resolution_notes?: string | null
+          satisfaction_rating?: number | null
+          sla_deadline?: string | null
           status?: Database["public"]["Enums"]["issue_status"]
           tracking_id?: string
           updated_at?: string
@@ -163,6 +213,44 @@ export type Database = {
         }
         Relationships: []
       }
+      satisfaction_ratings: {
+        Row: {
+          created_at: string
+          feedback: string | null
+          id: string
+          issue_id: string
+          rating: number
+          reporter_contact: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          issue_id: string
+          rating: number
+          reporter_contact?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          issue_id?: string
+          rating?: number
+          reporter_contact?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "satisfaction_ratings_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: true
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -181,6 +269,45 @@ export type Database = {
         }
         Relationships: []
       }
+      worker_profiles: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          department: string
+          id: string
+          phone: string | null
+          specialization: string | null
+          status: Database["public"]["Enums"]["worker_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          department: string
+          id?: string
+          phone?: string | null
+          specialization?: string | null
+          status?: Database["public"]["Enums"]["worker_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          department?: string
+          id?: string
+          phone?: string | null
+          specialization?: string | null
+          status?: Database["public"]["Enums"]["worker_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -195,7 +322,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "worker"
       issue_category:
         | "garbage"
         | "roads"
@@ -203,12 +330,14 @@ export type Database = {
         | "streetlights"
         | "parks"
         | "stray_dogs"
+      issue_priority: "low" | "medium" | "high" | "critical"
       issue_status:
         | "reported"
         | "assigned"
         | "in_progress"
         | "closed"
         | "escalated"
+      worker_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -336,7 +465,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "worker"],
       issue_category: [
         "garbage",
         "roads",
@@ -345,6 +474,7 @@ export const Constants = {
         "parks",
         "stray_dogs",
       ],
+      issue_priority: ["low", "medium", "high", "critical"],
       issue_status: [
         "reported",
         "assigned",
@@ -352,6 +482,7 @@ export const Constants = {
         "closed",
         "escalated",
       ],
+      worker_status: ["pending", "approved", "rejected"],
     },
   },
 } as const
