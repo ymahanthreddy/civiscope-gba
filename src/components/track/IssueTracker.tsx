@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useIssues, Issue } from '@/contexts/IssueContext';
 import { CATEGORY_CONFIG, STATUS_CONFIG, WORKFLOW_STEPS } from '@/lib/constants';
+import { SatisfactionRating } from '@/components/satisfaction/SatisfactionRating';
 import { 
   Search, 
   MapPin, 
@@ -17,7 +18,8 @@ import {
   AlertCircle,
   MessageSquare,
   AlertTriangle,
-  Flame
+  Flame,
+  Timer
 } from 'lucide-react';
 
 export function IssueTracker() {
