@@ -61,8 +61,26 @@ export function IssueManagement() {
     return issue.status !== 'closed' && issue.status !== 'escalated' && getDaysElapsed(issue.created_at) > 3;
   };
 
-  const handleAssign = async (issueId: string, officialName: string) => {
-    await assignIssue(issueId, officialName);
+  const handleAssign = async (issueId: string, workerUserId: string) => {
+    const worker = approvedWorkers.find(w => w.user_id === workerUserId);
+    const workerName = worker?.full_name || 'Unknown Worker';
+    
+    // Update both assigned_to (name) and assigned_worker_id (uuid)
+    const { error } = await supabase
+      .from('issues')
+      .update({ 
+        assigned_to: workerName,
+        assigned_worker_id: workerUserId,
+        status: 'assigned' as any,
+      })
+      .eq('id', issueId);
+    
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to assign issue', variant: 'destructive' });
+    } else {
+      toast({ title: 'Issue Assigned', description: `Assigned to ${workerName}` });
+      await refetch();
+    }
   };
 
   const handleStatusUpdate = async (issueId: string, status: IssueStatus) => {
