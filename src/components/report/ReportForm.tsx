@@ -226,7 +226,10 @@ export function ReportForm() {
                   exit={{ opacity: 0, height: 0 }}
                   className="space-y-2 overflow-hidden"
                 >
-                  <Label htmlFor="exactLocation">Exact Location / Landmark *</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="exactLocation">Exact Location / Landmark *</Label>
+                    <SpeechToText onTranscript={(text) => setFormData(prev => ({ ...prev, exactLocation: prev.exactLocation ? prev.exactLocation + ' ' + text : text }))} />
+                  </div>
                   <div className="relative">
                     <Navigation className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                     <Input
