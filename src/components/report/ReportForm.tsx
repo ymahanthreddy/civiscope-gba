@@ -19,6 +19,7 @@ import { BENGALURU_AREAS } from '@/lib/bengaluruAreas';
 import { toast } from '@/hooks/use-toast';
 import { Send, MapPin, User, Mail, CheckCircle2, Navigation, Sparkles } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
+import { SpeechToText } from './SpeechToText';
 
 export function ReportForm() {
   const navigate = useNavigate();
