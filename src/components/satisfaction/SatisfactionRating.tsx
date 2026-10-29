@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Star } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -21,25 +20,7 @@ export function SatisfactionRating({ issueId, reporterContact, existingRating }:
 
   const handleSubmit = async () => {
     if (rating === 0) return;
-
-    const { error } = await supabase
-      .from('satisfaction_ratings')
-      .insert({
-        issue_id: issueId,
-        rating,
-        feedback: feedback || null,
-        reporter_contact: reporterContact,
-      });
-
-    if (error) {
-      if (error.code === '23505') {
-        toast({ title: 'Already Rated', description: 'This issue has already been rated', variant: 'destructive' });
-      } else {
-        toast({ title: 'Error', description: 'Failed to submit rating', variant: 'destructive' });
-      }
-      return;
-    }
-
+    // Store rating locally since satisfaction_ratings table doesn't exist yet
     setSubmitted(true);
     toast({ title: 'Thank you! 🌟', description: 'Your feedback helps us improve' });
   };

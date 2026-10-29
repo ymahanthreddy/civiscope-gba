@@ -340,7 +340,6 @@ export function IssueTracker() {
                     <SatisfactionRating 
                       issueId={issue.id} 
                       reporterContact={issue.reporter_contact}
-                      existingRating={issue.satisfaction_rating}
                     />
                   </div>
                 )}

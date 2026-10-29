@@ -21,7 +21,7 @@ export function WorkerManagement() {
 
   const workerPerformance = useMemo(() => {
     return approvedWorkers.map(w => {
-      const assigned = issues.filter(i => i.assigned_worker_id === w.user_id);
+      const assigned = issues.filter(i => i.assigned_to === w.full_name);
       const resolved = assigned.filter(i => i.status === 'closed');
       const escalated = assigned.filter(i => i.status === 'escalated');
       return {
@@ -46,7 +46,7 @@ export function WorkerManagement() {
       head: [['Worker', 'Department', 'Assigned', 'Resolved', 'Escalated', 'Rate']],
       body: workerPerformance.map(w => [
         w.full_name || 'Unknown',
-        w.department,
+        w.skills?.join(', ') || 'N/A',
         w.totalAssigned,
         w.totalResolved,
         w.totalEscalated,
@@ -107,7 +107,7 @@ export function WorkerManagement() {
                 className="flex items-center justify-between p-3 rounded-lg border bg-card">
                 <div>
                   <p className="font-medium">{w.full_name || 'Unknown'}</p>
-                  <p className="text-sm text-muted-foreground">{w.department} {w.specialization ? `• ${w.specialization}` : ''}</p>
+                  <p className="text-sm text-muted-foreground">{w.skills?.join(', ') || 'General'}</p>
                   {w.phone && <p className="text-xs text-muted-foreground">📞 {w.phone}</p>}
                 </div>
                 <div className="flex gap-2">
@@ -138,7 +138,7 @@ export function WorkerManagement() {
               <thead>
                 <tr className="border-b">
                   <th className="text-left py-3 px-4 text-sm text-muted-foreground">Worker</th>
-                  <th className="text-left py-3 px-4 text-sm text-muted-foreground">Department</th>
+                  <th className="text-left py-3 px-4 text-sm text-muted-foreground">Skills</th>
                   <th className="text-left py-3 px-4 text-sm text-muted-foreground">Assigned</th>
                   <th className="text-left py-3 px-4 text-sm text-muted-foreground">Resolved</th>
                   <th className="text-left py-3 px-4 text-sm text-muted-foreground">Escalated</th>
@@ -149,7 +149,7 @@ export function WorkerManagement() {
                 {workerPerformance.map(w => (
                   <tr key={w.id} className="border-b hover:bg-muted/50">
                     <td className="py-3 px-4 font-medium">{w.full_name || 'Unknown'}</td>
-                    <td className="py-3 px-4 text-sm text-muted-foreground">{w.department}</td>
+                    <td className="py-3 px-4 text-sm text-muted-foreground">{w.skills?.join(', ') || 'General'}</td>
                     <td className="py-3 px-4">{w.totalAssigned}</td>
                     <td className="py-3 px-4 font-bold text-emerald-600">{w.totalResolved}</td>
                     <td className="py-3 px-4 text-destructive">{w.totalEscalated}</td>

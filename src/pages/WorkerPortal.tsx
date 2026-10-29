@@ -48,7 +48,7 @@ export default function WorkerPortal() {
   }, [user]);
 
   const myIssues = useMemo(() => 
-    issues.filter(i => i.assigned_worker_id === user?.id || i.assigned_to === user?.user_metadata?.full_name),
+    issues.filter(i => i.assigned_to === user?.user_metadata?.full_name),
     [issues, user]
   );
 
@@ -234,11 +234,7 @@ export default function WorkerPortal() {
                             <Badge className={`${STATUS_CONFIG[statKey]?.bgColor} ${STATUS_CONFIG[statKey]?.color} border ${STATUS_CONFIG[statKey]?.borderColor}`}>
                               {STATUS_CONFIG[statKey]?.label}
                             </Badge>
-                            {issue.priority && (
-                              <Badge variant={issue.priority === 'critical' ? 'destructive' : 'outline'}>
-                                {(issue.priority as string).toUpperCase()}
-                              </Badge>
-                            )}
+                            
                             {sla && <span className={`text-xs font-medium ${sla.color}`}><Timer className="w-3 h-3 inline mr-1" />{sla.label}</span>}
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">{issue.description}</p>
@@ -304,20 +300,13 @@ function WorkerLeaderboard({ currentUserId }: { currentUserId: string }) {
       if (!workerProfiles) return;
 
       const userIds = workerProfiles.map(w => w.user_id);
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name')
-        .in('user_id', userIds);
-
-      const nameMap = new Map(profiles?.map(p => [p.user_id, p.full_name]) || []);
-
       const leaderboard = workerProfiles.map(w => {
-        const assigned = issues.filter(i => i.assigned_worker_id === w.user_id);
+        const assigned = issues.filter(i => i.assigned_to === w.full_name);
         const resolved = assigned.filter(i => i.status === 'closed');
         return {
           user_id: w.user_id,
-          name: nameMap.get(w.user_id) || 'Unknown',
-          department: w.department,
+          name: w.full_name || 'Unknown',
+          skills: w.skills?.join(', ') || 'General',
           total: assigned.length,
           resolved: resolved.length,
           rate: assigned.length > 0 ? Math.round((resolved.length / assigned.length) * 100) : 0,
@@ -337,14 +326,14 @@ function WorkerLeaderboard({ currentUserId }: { currentUserId: string }) {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b"><th className="text-left py-3 px-4">#</th><th className="text-left py-3 px-4">Worker</th><th className="text-left py-3 px-4">Department</th><th className="text-left py-3 px-4">Resolved</th><th className="text-left py-3 px-4">Total</th><th className="text-left py-3 px-4">Rate</th></tr>
+                <tr className="border-b"><th className="text-left py-3 px-4">#</th><th className="text-left py-3 px-4">Worker</th><th className="text-left py-3 px-4">Skills</th><th className="text-left py-3 px-4">Resolved</th><th className="text-left py-3 px-4">Total</th><th className="text-left py-3 px-4">Rate</th></tr>
               </thead>
               <tbody>
                 {workers.map((w, i) => (
                   <tr key={w.user_id} className={`border-b hover:bg-muted/50 ${w.user_id === currentUserId ? 'bg-primary/5' : ''}`}>
                     <td className="py-3 px-4 font-bold">{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</td>
                     <td className="py-3 px-4 font-medium">{w.name} {w.user_id === currentUserId && <Badge variant="outline" className="ml-2 text-xs">You</Badge>}</td>
-                    <td className="py-3 px-4 text-sm text-muted-foreground">{w.department}</td>
+                    <td className="py-3 px-4 text-sm text-muted-foreground">{w.skills}</td>
                     <td className="py-3 px-4 font-bold text-emerald-600">{w.resolved}</td>
                     <td className="py-3 px-4">{w.total}</td>
                     <td className="py-3 px-4"><Badge variant={w.rate >= 80 ? 'default' : 'secondary'}>{w.rate}%</Badge></td>

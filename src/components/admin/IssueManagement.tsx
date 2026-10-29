@@ -65,12 +65,10 @@ export function IssueManagement() {
     const worker = approvedWorkers.find(w => w.user_id === workerUserId);
     const workerName = worker?.full_name || 'Unknown Worker';
     
-    // Update both assigned_to (name) and assigned_worker_id (uuid)
     const { error } = await supabase
       .from('issues')
       .update({ 
         assigned_to: workerName,
-        assigned_worker_id: workerUserId,
         status: 'assigned' as any,
       })
       .eq('id', issueId);
@@ -280,7 +278,7 @@ export function IssueManagement() {
                         <>
                           {/* Assign Dropdown */}
                           <Select
-                            value={issue.assigned_worker_id || issue.assigned_to || ''}
+                            value={issue.assigned_to || ''}
                             onValueChange={(value) => handleAssign(issue.id, value)}
                           >
                             <SelectTrigger className="w-full sm:w-[180px] bg-background">
@@ -290,7 +288,7 @@ export function IssueManagement() {
                             <SelectContent className="bg-popover">
                               {approvedWorkers.map((worker) => (
                                 <SelectItem key={worker.id} value={worker.user_id}>
-                                  {worker.full_name || 'Unknown'} ({worker.department})
+                                  {worker.full_name || 'Unknown'}
                                 </SelectItem>
                               ))}
                               {approvedWorkers.length === 0 && (

@@ -139,9 +139,9 @@ export default function AuthPage() {
       // Create worker profile
       const { error: wpError } = await supabase.from('worker_profiles').insert({
         user_id: session.user.id,
-        department: workerData.department,
+        full_name: workerData.fullName,
         phone: workerData.phone || null,
-        specialization: workerData.specialization || null,
+        skills: workerData.department ? [workerData.department] : [],
       });
 
       if (wpError) {

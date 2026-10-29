@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1793282956780,
+      "tag": "0000_add_multi_city_support",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793283016169,
+      "tag": "0001_worker_profile_fields",
+      "breakpoints": true
+    }
+  ]
+}

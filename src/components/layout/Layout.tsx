@@ -3,6 +3,9 @@ import { motion } from 'framer-motion';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { AnimatedBackground } from './AnimatedBackground';
+import { CursorFollower } from './CursorFollower';
+import { ScrollProgress } from './ScrollProgress';
+import { ScrollToTop } from './ScrollToTop';
 
 interface LayoutProps {
   children: ReactNode;
@@ -11,6 +14,8 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-background relative">
+      <CursorFollower />
+      <ScrollProgress />
       <AnimatedBackground />
       <Navbar />
       <motion.main 
@@ -22,6 +27,7 @@ export function Layout({ children }: LayoutProps) {
         {children}
       </motion.main>
       <Footer />
+      <ScrollToTop />
     </div>
   );
 }

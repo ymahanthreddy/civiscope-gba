@@ -5,17 +5,13 @@ import { toast } from '@/hooks/use-toast';
 export interface WorkerProfile {
   id: string;
   user_id: string;
-  department: string;
+  full_name: string;
   phone: string | null;
-  specialization: string | null;
+  skills: string[] | null;
+  city_id: string | null;
   status: 'pending' | 'approved' | 'rejected';
-  approved_at: string | null;
-  approved_by: string | null;
   created_at: string;
   updated_at: string;
-  // Joined data
-  full_name?: string;
-  email?: string;
 }
 
 export function useWorkers() {
@@ -30,25 +26,15 @@ export function useWorkers() {
 
     if (error) {
       console.error('Error fetching workers:', error);
+      setLoading(false);
       return;
     }
 
-    // Get profile names for workers
     if (data && data.length > 0) {
-      const userIds = data.map(w => w.user_id);
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name')
-        .in('user_id', userIds);
-
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p.full_name]) || []);
-      
       const enriched = data.map(w => ({
         ...w,
         status: w.status as 'pending' | 'approved' | 'rejected',
-        full_name: profileMap.get(w.user_id) || 'Unknown',
       }));
-      
       setWorkers(enriched);
     } else {
       setWorkers([]);
@@ -73,11 +59,7 @@ export function useWorkers() {
   const approveWorker = async (workerId: string, approverId: string) => {
     const { error } = await supabase
       .from('worker_profiles')
-      .update({ 
-        status: 'approved',
-        approved_at: new Date().toISOString(),
-        approved_by: approverId,
-      })
+      .update({ status: 'approved' })
       .eq('id', workerId);
 
     if (error) {
@@ -85,12 +67,11 @@ export function useWorkers() {
       return false;
     }
 
-    // Also set worker role
     const worker = workers.find(w => w.id === workerId);
     if (worker) {
       await supabase.from('user_roles').upsert({ 
         user_id: worker.user_id, 
-        role: 'worker' 
+        role: 'worker' as any
       }, { onConflict: 'user_id,role' });
     }
 
