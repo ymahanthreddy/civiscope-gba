@@ -338,10 +338,13 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          city_id: string | null
           created_at: string
           department: string
+          full_name: string | null
           id: string
           phone: string | null
+          skills: string[] | null
           specialization: string | null
           status: Database["public"]["Enums"]["worker_status"]
           updated_at: string
@@ -350,10 +353,13 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          city_id?: string | null
           created_at?: string
           department: string
+          full_name?: string | null
           id?: string
           phone?: string | null
+          skills?: string[] | null
           specialization?: string | null
           status?: Database["public"]["Enums"]["worker_status"]
           updated_at?: string
@@ -362,16 +368,27 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          city_id?: string | null
           created_at?: string
           department?: string
+          full_name?: string | null
           id?: string
           phone?: string | null
+          skills?: string[] | null
           specialization?: string | null
           status?: Database["public"]["Enums"]["worker_status"]
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "worker_profiles_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
