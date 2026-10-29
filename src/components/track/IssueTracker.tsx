@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useIssues, Issue } from '@/contexts/IssueContext';
 import { CATEGORY_CONFIG, STATUS_CONFIG, WORKFLOW_STEPS } from '@/lib/constants';
+import { SatisfactionRating } from '@/components/satisfaction/SatisfactionRating';
 import { 
   Search, 
   MapPin, 
@@ -17,7 +18,8 @@ import {
   AlertCircle,
   MessageSquare,
   AlertTriangle,
-  Flame
+  Flame,
+  Timer
 } from 'lucide-react';
 
 export function IssueTracker() {
@@ -323,16 +325,22 @@ export function IssueTracker() {
                   </div>
                 )}
 
-                {/* Closure Status */}
+                {/* Closure Status + Rating */}
                 {issue.status === 'closed' && issue.closed_at && (
-                  <div className="mt-6 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
-                    <div className="flex items-center gap-2 mb-3">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                      <span className="font-medium text-emerald-600">Issue Resolved</span>
+                  <div className="mt-6 space-y-4">
+                    <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
+                      <div className="flex items-center gap-2 mb-3">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                        <span className="font-medium text-emerald-600">Issue Resolved</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Closed on {new Date(issue.closed_at).toLocaleDateString('en-IN')}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Closed on {new Date(issue.closed_at).toLocaleDateString('en-IN')}
-                    </p>
+                    <SatisfactionRating 
+                      issueId={issue.id} 
+                      reporterContact={issue.reporter_contact}
+                    />
                   </div>
                 )}
               </CardContent>

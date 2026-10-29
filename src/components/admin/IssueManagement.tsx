@@ -6,39 +6,25 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
 import { useIssues, Issue, IssueStatus } from '@/contexts/IssueContext';
+import { useWorkers } from '@/hooks/useWorkers';
 import { CATEGORY_CONFIG, STATUS_CONFIG } from '@/lib/constants';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { 
-  Search, 
-  Filter, 
-  MapPin, 
-  Calendar, 
-  User,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  ImagePlus,
-  Flame,
-  Mail
+  Search, Filter, MapPin, Calendar, User, AlertTriangle, CheckCircle2, Clock,
+  ImagePlus, Flame, Mail, Timer
 } from 'lucide-react';
 
 export function IssueManagement() {
-  const { issues, officials, loading, assignIssue, updateIssueStatus, closeIssue, refetch } = useIssues();
+  const { issues, loading, assignIssue, updateIssueStatus, closeIssue, refetch } = useIssues();
+  const { getApprovedWorkers } = useWorkers();
+  const approvedWorkers = getApprovedWorkers();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -75,8 +61,24 @@ export function IssueManagement() {
     return issue.status !== 'closed' && issue.status !== 'escalated' && getDaysElapsed(issue.created_at) > 3;
   };
 
-  const handleAssign = async (issueId: string, officialName: string) => {
-    await assignIssue(issueId, officialName);
+  const handleAssign = async (issueId: string, workerUserId: string) => {
+    const worker = approvedWorkers.find(w => w.user_id === workerUserId);
+    const workerName = worker?.full_name || 'Unknown Worker';
+    
+    const { error } = await supabase
+      .from('issues')
+      .update({ 
+        assigned_to: workerName,
+        status: 'assigned' as any,
+      })
+      .eq('id', issueId);
+    
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to assign issue', variant: 'destructive' });
+    } else {
+      toast({ title: 'Issue Assigned', description: `Assigned to ${workerName}` });
+      await refetch();
+    }
   };
 
   const handleStatusUpdate = async (issueId: string, status: IssueStatus) => {
@@ -279,16 +281,19 @@ export function IssueManagement() {
                             value={issue.assigned_to || ''}
                             onValueChange={(value) => handleAssign(issue.id, value)}
                           >
-                            <SelectTrigger className="w-full sm:w-[160px] bg-background">
+                            <SelectTrigger className="w-full sm:w-[180px] bg-background">
                               <User className="w-4 h-4 mr-2" />
-                              <SelectValue placeholder="Assign to..." />
+                              <SelectValue placeholder="Assign worker..." />
                             </SelectTrigger>
                             <SelectContent className="bg-popover">
-                              {officials.map((official) => (
-                                <SelectItem key={official.id} value={official.name}>
-                                  {official.name}
+                              {approvedWorkers.map((worker) => (
+                                <SelectItem key={worker.id} value={worker.user_id}>
+                                  {worker.full_name || 'Unknown'}
                                 </SelectItem>
                               ))}
+                              {approvedWorkers.length === 0 && (
+                                <div className="px-3 py-2 text-sm text-muted-foreground">No approved workers</div>
+                              )}
                             </SelectContent>
                           </Select>
 

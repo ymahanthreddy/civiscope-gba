@@ -13,14 +13,15 @@ import {
   X,
   Sparkles,
   User,
-  Home
+  Home,
+  Wrench
 } from 'lucide-react';
 import { useState } from 'react';
 import logo from '@/assets/logo.png';
 
 export function Navbar() {
   const location = useLocation();
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, signOut, isAdmin, isWorker } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -30,9 +31,12 @@ export function Navbar() {
     { to: '/about', label: 'About Us', icon: User },
   ];
 
-  // Add user dashboard for logged-in non-admin users
-  if (user && !isAdmin) {
+  if (user && !isAdmin && !isWorker) {
     navItems.push({ to: '/dashboard', label: 'My Dashboard', icon: User });
+  }
+
+  if (isWorker) {
+    navItems.push({ to: '/worker', label: 'Worker Portal', icon: Wrench });
   }
 
   if (isAdmin) {

@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   isAdmin: boolean;
+  isWorker: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
@@ -18,54 +19,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isWorker, setIsWorker] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const checkAdminRole = async (userId: string) => {
+  const checkRoles = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', userId)
-        .eq('role', 'admin')
-        .maybeSingle();
+        .eq('user_id', userId);
       
       if (error) {
-        console.error('Error checking admin role:', error);
-        return false;
+        console.error('Error checking roles:', error);
+        return { admin: false, worker: false };
       }
       
-      return !!data;
+      const roles = data?.map(r => r.role) || [];
+      return { 
+        admin: roles.includes('admin'), 
+        worker: roles.includes('worker') 
+      };
     } catch (error) {
-      console.error('Error checking admin role:', error);
-      return false;
+      console.error('Error checking roles:', error);
+      return { admin: false, worker: false };
     }
   };
 
+  // Also check worker_profiles for approved status
+  const checkWorkerProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from('worker_profiles')
+      .select('status')
+      .eq('user_id', userId)
+      .maybeSingle();
+    return data?.status === 'approved';
+  };
+
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Defer admin check with setTimeout to avoid deadlock
         if (session?.user) {
-          setTimeout(() => {
-            checkAdminRole(session.user.id).then(setIsAdmin);
+          setTimeout(async () => {
+            const roles = await checkRoles(session.user.id);
+            setIsAdmin(roles.admin);
+            const workerApproved = await checkWorkerProfile(session.user.id);
+            setIsWorker(roles.worker || workerApproved);
           }, 0);
         } else {
           setIsAdmin(false);
+          setIsWorker(false);
         }
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        checkAdminRole(session.user.id).then(setIsAdmin);
+        const roles = await checkRoles(session.user.id);
+        setIsAdmin(roles.admin);
+        const workerApproved = await checkWorkerProfile(session.user.id);
+        setIsWorker(roles.worker || workerApproved);
       }
       
       setIsLoading(false);
@@ -75,25 +93,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error as Error | null };
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    
     const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          full_name: fullName,
-        },
-      },
+      email, password,
+      options: { emailRedirectTo: redirectUrl, data: { full_name: fullName } },
     });
     return { error: error as Error | null };
   };
@@ -101,18 +109,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut();
     setIsAdmin(false);
+    setIsWorker(false);
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      session, 
-      isAdmin, 
-      isLoading,
-      signIn, 
-      signUp, 
-      signOut 
-    }}>
+    <AuthContext.Provider value={{ user, session, isAdmin, isWorker, isLoading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

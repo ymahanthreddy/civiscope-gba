@@ -52,8 +52,9 @@ export function useSupabaseIssues() {
     loadData();
 
     // Subscribe to realtime changes
+    const channelName = `issues-changes-${Date.now()}`;
     const channel = supabase
-      .channel('issues-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'issues' },

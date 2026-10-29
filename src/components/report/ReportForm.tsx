@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -13,19 +13,66 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useIssues, IssueCategory } from '@/contexts/IssueContext';
+import { useCity } from '@/contexts/CityContext';
 import { CATEGORY_CONFIG } from '@/lib/constants';
-import { BENGALURU_AREAS } from '@/lib/bengaluruAreas';
 import { toast } from '@/hooks/use-toast';
-import { Send, MapPin, User, Mail, CheckCircle2, Navigation, Sparkles } from 'lucide-react';
+import { Send, MapPin, User, Mail, CheckCircle2, Navigation, Sparkles, LocateFixed, Globe, Zap, Brain, Shield, Clock, TrendingUp } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
+import { SpeechToText } from './SpeechToText';
+
+// AI-powered category suggestion based on keywords
+const CATEGORY_KEYWORDS: Record<IssueCategory, string[]> = {
+  garbage: ['garbage', 'trash', 'waste', 'dump', 'litter', 'dustbin', 'rubbish', 'dirty', 'smell', 'stink', 'overflowing', 'debris', 'kachra', 'kuda'],
+  roads: ['road', 'pothole', 'crack', 'broken road', 'pavement', 'footpath', 'sidewalk', 'asphalt', 'tar', 'construction', 'speed bump', 'divider'],
+  drainage: ['drain', 'water', 'flood', 'sewage', 'clog', 'overflow', 'manhole', 'gutter', 'waterlog', 'pipeline', 'leak', 'nala', 'naala'],
+  streetlights: ['light', 'lamp', 'dark', 'bulb', 'pole', 'electric', 'power', 'wire', 'voltage', 'street light', 'streetlight', 'not working'],
+  parks: ['park', 'garden', 'tree', 'bench', 'playground', 'grass', 'swing', 'fence', 'green', 'plant', 'maintenance'],
+  stray_dogs: ['dog', 'stray', 'bite', 'bark', 'animal', 'aggressive', 'rabies', 'puppy', 'pack', 'menace'],
+};
+
+function suggestCategory(text: string): { category: IssueCategory; confidence: number } | null {
+  if (!text || text.length < 5) return null;
+  const lower = text.toLowerCase();
+  let bestCategory: IssueCategory | null = null;
+  let bestScore = 0;
+
+  for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS) as [IssueCategory, string[]][]) {
+    let score = 0;
+    for (const kw of keywords) {
+      if (lower.includes(kw)) score += kw.length; // longer keyword matches = higher confidence
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestCategory = cat;
+    }
+  }
+
+  if (!bestCategory || bestScore < 3) return null;
+  const confidence = Math.min(95, 40 + bestScore * 5);
+  return { category: bestCategory, confidence };
+}
+
+function LocationPulse() {
+  return (
+    <span className="relative flex h-3 w-3">
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+      <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+    </span>
+  );
+}
 
 export function ReportForm() {
   const navigate = useNavigate();
   const { addIssue } = useIssues();
+  const { cities, selectedCity, setSelectedCity, cityAreas, detectedArea, detectedAreaDistance, setDetectedArea, locationDetected, locationError, detectLocation, userCoords, accuracy, reverseAddress } = useCity();
+  const [autoFilledLocation, setAutoFilledLocation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [trackingId, setTrackingId] = useState('');
+  const [aiSuggestionApplied, setAiSuggestionApplied] = useState(false);
 
   const [formData, setFormData] = useState({
     category: '' as IssueCategory | '',
@@ -37,13 +84,52 @@ export function ReportForm() {
     imageUrl: '',
   });
 
+  // Auto-fill area when detected
+  useEffect(() => {
+    if (detectedArea && !formData.area) {
+      setFormData(prev => ({ ...prev, area: detectedArea.name }));
+    }
+  }, [detectedArea, formData.area]);
+
+  // Auto-fill exact location once with reverse-geocoded street/landmark
+  useEffect(() => {
+    if (reverseAddress && !formData.exactLocation && !autoFilledLocation) {
+      setFormData(prev => ({ ...prev, exactLocation: reverseAddress }));
+      setAutoFilledLocation(true);
+    }
+  }, [reverseAddress, formData.exactLocation, autoFilledLocation]);
+
+  // AI category suggestion
+  const aiSuggestion = useMemo(() => suggestCategory(formData.description), [formData.description]);
+
+  const applyAiSuggestion = () => {
+    if (aiSuggestion) {
+      setFormData(prev => ({ ...prev, category: aiSuggestion.category }));
+      setAiSuggestionApplied(true);
+      toast({ title: '🧠 AI Applied!', description: `Category set to ${CATEGORY_CONFIG[aiSuggestion.category].label}` });
+    }
+  };
+
+  // Completion progress
+  const completionProgress = useMemo(() => {
+    let filled = 0;
+    const total = 6;
+    if (selectedCity) filled++;
+    if (formData.category) filled++;
+    if (formData.description.length > 10) filled++;
+    if (formData.area) filled++;
+    if (formData.reporterName) filled++;
+    if (formData.reporterContact) filled++;
+    return Math.round((filled / total) * 100);
+  }, [selectedCity, formData]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.category || !formData.description || !formData.area || !formData.exactLocation || !formData.reporterName || !formData.reporterContact) {
+    if (!selectedCity || !formData.category || !formData.description || !formData.area || !formData.exactLocation || !formData.reporterName || !formData.reporterContact) {
       toast({
         title: 'Missing Information',
-        description: 'Please fill in all required fields.',
+        description: 'Please fill in all required fields including city.',
         variant: 'destructive',
       });
       return;
@@ -51,8 +137,7 @@ export function ReportForm() {
 
     setIsSubmitting(true);
 
-    // Combine area and exact location
-    const fullLocation = `${formData.exactLocation}, ${formData.area}`;
+    const fullLocation = `${formData.exactLocation}, ${formData.area}, ${selectedCity.name}`;
 
     const id = await addIssue({
       category: formData.category as IssueCategory,
@@ -115,6 +200,7 @@ export function ReportForm() {
               </Button>
               <Button variant="outline" onClick={() => {
                 setSubmitted(false);
+                setAiSuggestionApplied(false);
                 setFormData({
                   category: '',
                   description: '',
@@ -140,21 +226,168 @@ export function ReportForm() {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto"
     >
-      <Card className="shadow-xl">
+      <Card className="shadow-xl overflow-hidden">
+        {/* Smart Progress Bar */}
+        <div className="relative">
+          <Progress value={completionProgress} className="h-1.5 rounded-none" />
+          <AnimatePresence>
+            {completionProgress === 100 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="absolute right-3 -bottom-6 text-xs text-primary font-medium flex items-center gap-1"
+              >
+                <Zap className="w-3 h-3" /> Ready to submit!
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
         <CardHeader className="text-center pb-2">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Badge variant="outline" className="text-xs border-primary/30 text-primary gap-1">
+              <Shield className="w-3 h-3" /> AI-Powered
+            </Badge>
+            <Badge variant="outline" className="text-xs border-primary/30 text-primary gap-1">
+              <Clock className="w-3 h-3" /> ~2 min
+            </Badge>
+          </div>
           <CardTitle className="font-display text-2xl">Report a Civic Issue</CardTitle>
           <CardDescription>
-            Help us make your community better. No login required.
+            Help us make your community better. AI assists you every step.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+
+            {/* City + Area Detection */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                Your Location *
+                {userCoords && <LocationPulse />}
+              </Label>
+              {selectedCity ? (
+                <motion.div 
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-2"
+                >
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                    <LocateFixed className="w-5 h-5 text-primary" />
+                    <div className="flex-1">
+                      <span className="font-medium">{selectedCity.name}</span>
+                      <span className="text-muted-foreground text-sm ml-2">({selectedCity.state})</span>
+                      {detectedArea && (
+                        <span className="text-primary text-sm ml-1">• {detectedArea.name}</span>
+                      )}
+                    </div>
+                    <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+                      Auto-detected
+                    </Badge>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => { setSelectedCity(null); setDetectedArea(null); setFormData(prev => ({ ...prev, area: '', exactLocation: '' })); setAutoFilledLocation(false); }}>
+                      Change
+                    </Button>
+                  </div>
+                  {userCoords && (
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground px-1">
+                      <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{userCoords.lat.toFixed(4)}°N, {userCoords.lng.toFixed(4)}°E</span>
+                      {accuracy && <><span className="text-primary/50">•</span><span>±{Math.round(accuracy)}m accuracy</span></>}
+                      {detectedAreaDistance !== null && detectedArea && (
+                        <><span className="text-primary/50">•</span><span>{detectedAreaDistance.toFixed(1)}km from {detectedArea.name} center</span></>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              ) : (
+                <div className="space-y-2">
+                  {locationError && (
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-sm text-amber-700 dark:text-amber-400">
+                      <Globe className="w-4 h-4 flex-shrink-0" />
+                      <span>{locationError}</span>
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <Select
+                      value={selectedCity?.id || ''}
+                      onValueChange={(id) => {
+                        const city = cities.find(c => c.id === id);
+                        if (city) setSelectedCity(city);
+                      }}
+                    >
+                      <SelectTrigger className="bg-background flex-1">
+                        <SelectValue placeholder="Select your city" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover">
+                        {cities.map((city) => (
+                          <SelectItem key={city.id} value={city.id}>
+                            <div className="flex items-center gap-2">
+                              <MapPin className="w-4 h-4 text-primary" />
+                              <span>{city.name}</span>
+                              <span className="text-muted-foreground text-xs">({city.state})</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button type="button" variant="outline" size="icon" onClick={detectLocation} title="Detect my location">
+                      <LocateFixed className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Description with AI Suggestion */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="description">Description *</Label>
+                <SpeechToText onTranscript={(text) => setFormData(prev => ({ ...prev, description: prev.description ? prev.description + ' ' + text : text }))} />
+              </div>
+              <Textarea
+                id="description"
+                placeholder="Describe the issue in detail — our AI will suggest a category..."
+                value={formData.description}
+                onChange={(e) => { setFormData(prev => ({ ...prev, description: e.target.value })); setAiSuggestionApplied(false); }}
+                rows={4}
+                className="resize-none"
+              />
+              {/* AI Category Suggestion Card */}
+              <AnimatePresence>
+                {aiSuggestion && !aiSuggestionApplied && !formData.category && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: 'auto' }}
+                    exit={{ opacity: 0, y: -10, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-violet-500/10 to-cyan-500/10 border border-violet-500/20">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
+                        <Brain className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">
+                          AI suggests: <span className="text-primary">{CATEGORY_CONFIG[aiSuggestion.category].icon} {CATEGORY_CONFIG[aiSuggestion.category].label}</span>
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Progress value={aiSuggestion.confidence} className="h-1.5 flex-1" />
+                          <span className="text-xs text-muted-foreground">{aiSuggestion.confidence}% match</span>
+                        </div>
+                      </div>
+                      <Button type="button" size="sm" variant="secondary" onClick={applyAiSuggestion} className="flex-shrink-0">
+                        <Sparkles className="w-3 h-3 mr-1" /> Apply
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             {/* Category Selection */}
             <div className="space-y-2">
               <Label htmlFor="category">Issue Category *</Label>
               <Select
                 value={formData.category}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, category: value as IssueCategory }))}
+                onValueChange={(value) => { setFormData(prev => ({ ...prev, category: value as IssueCategory })); setAiSuggestionApplied(true); }}
               >
                 <SelectTrigger className="bg-background">
                   <SelectValue placeholder="Select issue type" />
@@ -165,6 +398,9 @@ export function ReportForm() {
                       <div className="flex items-center gap-2">
                         <span>{config.icon}</span>
                         <span>{config.label}</span>
+                        {aiSuggestion?.category === key && (
+                          <Badge className="text-[10px] px-1.5 py-0 ml-1 bg-violet-500/20 text-violet-600 border-violet-500/30">AI pick</Badge>
+                        )}
                       </div>
                     </SelectItem>
                   ))}
@@ -177,43 +413,52 @@ export function ReportForm() {
               )}
             </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Description *</Label>
-              <Textarea
-                id="description"
-                placeholder="Describe the issue in detail..."
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                rows={4}
-                className="resize-none"
-              />
-            </div>
+            {/* Area Selection - with auto-detect */}
+            <AnimatePresence>
+              {selectedCity && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-2 overflow-hidden"
+                >
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="area">Area in {selectedCity.name} *</Label>
+                    {detectedArea && formData.area === detectedArea.name && (
+                      <Badge variant="outline" className="text-[10px] border-primary/30 text-primary gap-1">
+                        <LocateFixed className="w-2.5 h-2.5" /> GPS matched
+                      </Badge>
+                    )}
+                  </div>
+                  <Select
+                    value={formData.area}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, area: value }))}
+                  >
+                    <SelectTrigger className="bg-background">
+                      <SelectValue placeholder="Select your area" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover max-h-[300px]">
+                      {cityAreas.map((area) => (
+                        <SelectItem key={area.id} value={area.name}>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-primary" />
+                            <span>{area.name}</span>
+                            {detectedArea?.id === area.id && (
+                              <Badge className="text-[10px] px-1.5 py-0 bg-primary/20 text-primary border-primary/30">nearest</Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                      {cityAreas.length === 0 && (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">Loading areas...</div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {/* Area Selection */}
-            <div className="space-y-2">
-              <Label htmlFor="area">Area in Bengaluru *</Label>
-              <Select
-                value={formData.area}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, area: value }))}
-              >
-                <SelectTrigger className="bg-background">
-                  <SelectValue placeholder="Select your area" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover max-h-[300px]">
-                  {BENGALURU_AREAS.map((area) => (
-                    <SelectItem key={area.name} value={area.name}>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-primary" />
-                        <span>{area.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Exact Location - appears after area selection */}
+            {/* Exact Location */}
             <AnimatePresence>
               {formData.area && (
                 <motion.div
@@ -222,7 +467,10 @@ export function ReportForm() {
                   exit={{ opacity: 0, height: 0 }}
                   className="space-y-2 overflow-hidden"
                 >
-                  <Label htmlFor="exactLocation">Exact Location / Landmark *</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="exactLocation">Exact Location / Landmark *</Label>
+                    <SpeechToText onTranscript={(text) => setFormData(prev => ({ ...prev, exactLocation: prev.exactLocation ? prev.exactLocation + ' ' + text : text }))} />
+                  </div>
                   <div className="relative">
                     <Navigation className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -233,8 +481,12 @@ export function ReportForm() {
                       className="pl-10"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    E.g., Near XYZ School, Opposite ABC Hospital, etc.
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    {autoFilledLocation && formData.exactLocation === reverseAddress ? (
+                      <><Sparkles className="w-3 h-3 text-primary" /> Auto-filled from GPS — feel free to edit</>
+                    ) : (
+                      <>E.g., Near XYZ School, Opposite ABC Hospital, etc.</>
+                    )}
                   </p>
                 </motion.div>
               )}
@@ -278,6 +530,29 @@ export function ReportForm() {
                 </div>
               </div>
             </div>
+
+            {/* Smart Summary before submit */}
+            <AnimatePresence>
+              {completionProgress >= 80 && formData.description && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="p-3 rounded-lg bg-muted/50 border border-border/50 space-y-1.5">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                      <TrendingUp className="w-3 h-3" /> Quick Summary
+                    </div>
+                    <div className="text-sm">
+                      <span className="font-medium">{formData.category ? CATEGORY_CONFIG[formData.category as IssueCategory]?.icon : '📋'}</span>
+                      {' '}{formData.category ? CATEGORY_CONFIG[formData.category as IssueCategory]?.label : 'Issue'} in{' '}
+                      <span className="font-medium">{formData.area || '...'}, {selectedCity?.name || '...'}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <Button
               type="submit"
