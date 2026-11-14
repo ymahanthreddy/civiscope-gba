@@ -140,6 +140,7 @@ export default function AuthPage() {
       const { error: wpError } = await supabase.from('worker_profiles').insert({
         user_id: session.user.id,
         full_name: workerData.fullName,
+        department: workerData.department || 'General',
         phone: workerData.phone || null,
         skills: workerData.department ? [workerData.department] : [],
       });
