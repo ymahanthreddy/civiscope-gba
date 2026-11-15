@@ -1,156 +1,167 @@
-import { Layout } from '@/components/layout/Layout';
-import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { Target, Heart, Lightbulb, Camera, Brain, Send, CheckCircle2, TrendingUp, Users2, MapPin, Clock, Sparkles } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { WaveDivider } from '@/components/ui/wave-divider';
+import { motion } from 'framer-motion';
+import {
+  ArrowDown,
+  ArrowRight,
+  BrainCircuit,
+  Camera,
+  CheckCircle2,
+  HeartHandshake,
+  MapPin,
+  MessageSquareText,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  TrendingUp,
+  UsersRound,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
+import cityImage from '@/assets/hero-city.jpg';
+import { Layout } from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 
 const values = [
   {
     icon: Target,
-    title: 'Our Mission',
-    description: 'To empower citizens and streamline civic issue resolution through innovative technology.',
+    title: 'Make every report count',
+    description: 'Give residents a clear way to share local problems and keep an eye on what happens next.',
+    color: 'from-cyan-500 to-blue-500',
   },
   {
-    icon: Heart,
-    title: 'Our Vision',
-    description: 'A city where every voice is heard and every issue is resolved efficiently.',
+    icon: ShieldCheck,
+    title: 'Build trust through visibility',
+    description: 'A shared issue lifecycle makes progress easier to follow for citizens and officials alike.',
+    color: 'from-emerald-500 to-teal-500',
   },
   {
-    icon: Lightbulb,
-    title: 'Innovation',
-    description: 'Leveraging AI and modern tech to create smarter, more responsive urban governance.',
+    icon: HeartHandshake,
+    title: 'Put people at the center',
+    description: 'Connect community concerns with the teams responsible for responding to them.',
+    color: 'from-orange-500 to-pink-500',
   },
 ];
 
-const journey = [
-  { icon: Camera, title: 'Capture', desc: 'Snap a photo, speak the issue, or type — GPS pins your location automatically.', color: 'from-cyan-500 to-blue-500' },
-  { icon: Brain, title: 'AI Analyzes', desc: 'Our AI categorizes the issue and matches it to the right department in seconds.', color: 'from-violet-500 to-fuchsia-500' },
-  { icon: Send, title: 'Auto-Routed', desc: 'The case is dispatched to the nearest available worker with full context.', color: 'from-orange-500 to-pink-500' },
-  { icon: CheckCircle2, title: 'Resolved & Verified', desc: 'Track real-time updates and rate the resolution to keep officials accountable.', color: 'from-emerald-500 to-teal-500' },
+const steps = [
+  { icon: Camera, title: 'Report', description: 'Describe the issue, choose its area, and attach a photo if helpful.' },
+  { icon: BrainCircuit, title: 'Route', description: 'The issue enters a workflow for review, assignment, and action.' },
+  { icon: MessageSquareText, title: 'Follow progress', description: 'Use your tracking ID to check updates as the report moves forward.' },
+  { icon: CheckCircle2, title: 'Close the loop', description: 'See when work is marked complete and share feedback on the outcome.' },
 ];
 
-function useCounter(target: number, duration = 1500) {
-  const [val, setVal] = useState(0);
+function useImpactStats() {
+  const [stats, setStats] = useState({ issues: 0, resolved: 0 });
+
   useEffect(() => {
-    let start: number | null = null;
-    let raf = 0;
-    const step = (ts: number) => {
-      if (start === null) start = ts;
-      const p = Math.min(1, (ts - start) / duration);
-      setVal(Math.floor(p * target));
-      if (p < 1) raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [target, duration]);
-  return val;
-}
+    let active = true;
 
-function StatCard({ icon: Icon, value, suffix, label, gradient, delay }: { icon: any; value: number; suffix?: string; label: string; gradient: string; delay: number }) {
-  const count = useCounter(value);
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay, duration: 0.5 }}
-    >
-      <Card className="relative overflow-hidden bg-background/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 group">
-        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-        <CardContent className="p-6 relative">
-          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4 shadow-lg`}>
-            <Icon className="w-6 h-6 text-white" />
-          </div>
-          <div className="text-4xl font-bold mb-1 font-display">
-            {count.toLocaleString()}<span className="text-primary">{suffix}</span>
-          </div>
-          <div className="text-sm text-muted-foreground">{label}</div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
+    const loadStats = async () => {
+      const [issuesResult, resolvedResult] = await Promise.all([
+        supabase.from('issues').select('*', { count: 'exact', head: true }),
+        supabase.from('issues').select('*', { count: 'exact', head: true }).eq('status', 'closed'),
+      ]);
+
+      if (active) {
+        setStats({
+          issues: issuesResult.count ?? 0,
+          resolved: resolvedResult.count ?? 0,
+        });
+      }
+    };
+
+    void loadStats();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return stats;
 }
 
 export default function AboutPage() {
-  const [stats, setStats] = useState({ issues: 0, resolved: 0, cities: 0, citizens: 0 });
-
-  useEffect(() => {
-    (async () => {
-      const [issuesRes, resolvedRes, citiesRes, citizensRes] = await Promise.all([
-        supabase.from('issues').select('*', { count: 'exact', head: true }),
-        supabase.from('issues').select('*', { count: 'exact', head: true }).eq('status', 'closed'),
-        supabase.from('cities').select('*', { count: 'exact', head: true }),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-      ]);
-      setStats({
-        issues: Math.max(issuesRes.count ?? 0, 1240),
-        resolved: Math.max(resolvedRes.count ?? 0, 980),
-        cities: citiesRes.count ?? 10,
-        citizens: Math.max(citizensRes.count ?? 0, 5400),
-      });
-    })();
-  }, []);
-
+  const stats = useImpactStats();
   const resolutionRate = stats.issues > 0 ? Math.round((stats.resolved / stats.issues) * 100) : 0;
 
   return (
     <Layout>
-      {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10" />
-        <div className="container mx-auto px-4 relative z-10">
+      <section className="relative isolate overflow-hidden border-b border-border/60">
+        <div className="absolute inset-0 -z-20 bg-muted/40" />
+        <div className="absolute inset-y-0 right-0 -z-10 hidden w-[58%] bg-gradient-to-l from-primary/10 via-secondary/10 to-transparent lg:block" />
+        <div className="container mx-auto grid min-h-[540px] items-center gap-12 px-4 py-16 md:py-20 lg:grid-cols-[1.02fr_0.98fr] lg:py-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center max-w-3xl mx-auto"
+            transition={{ duration: 0.55 }}
+            className="max-w-2xl"
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              About Civiscope
+            <div className="mb-6 inline-flex items-center gap-2 border-l-2 border-primary pl-3 text-sm font-semibold text-primary">
+              <Sparkles className="h-4 w-4" /> A clearer path from concern to action
+            </div>
+            <h1 className="font-display text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
+              Better cities begin with <span className="text-primary">being heard.</span>
             </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              Civiscope is a next-generation civic issue management platform designed to bridge 
-              the gap between citizens and local governance. We believe in creating transparent, 
-              efficient, and responsive urban communities.
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+              Civiscope brings civic reporting, issue tracking, and response workflows together—so local concerns are easier to raise and easier to follow.
             </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Button asChild size="lg" className="h-12 px-6">
+                <Link to="/report">Report an issue <ArrowRight aria-hidden="true" /></Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="h-12 px-6">
+                <Link to="/track">Track a report <MapPin aria-hidden="true" /></Link>
+              </Button>
+            </div>
+            <a href="#how-it-works" className="mt-10 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+              Explore how it works <ArrowDown className="h-4 w-4" />
+            </a>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.65, delay: 0.1 }}
+            className="relative mx-auto w-full max-w-xl"
+          >
+            <div className="overflow-hidden rounded-md border border-border/60 shadow-xl">
+              <img src={cityImage} alt="Illustrated city with civic issue reporting and infrastructure data" className="aspect-[1.15/1] w-full object-cover" />
+            </div>
+            <div className="absolute -bottom-5 left-4 flex items-center gap-3 border border-border/60 bg-background/95 px-4 py-3 shadow-lg sm:left-8">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <UsersRound className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">A shared civic space</p>
+                <p className="text-xs text-muted-foreground">Residents · officials · workers</p>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      <WaveDivider fillClass="fill-muted/30" />
-      <section className="py-16 bg-muted/30">
+      <section className="py-16 md:py-20">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl font-bold mb-4">What Drives Us</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Our core values shape everything we do at Civiscope
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="mb-10 max-w-2xl">
+            <p className="mb-3 text-sm font-semibold uppercase text-primary">What guides us</p>
+            <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">Technology should make civic action feel human.</h2>
+            <p className="mt-4 leading-relaxed text-muted-foreground">We focus on practical tools that help communities communicate clearly and make progress visible.</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
             {values.map((value, index) => (
               <motion.div
                 key={value.title}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
               >
-                <Card className="h-full bg-background/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300">
-                  <CardContent className="p-6 text-center">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center mx-auto mb-4">
-                      <value.icon className="w-7 h-7 text-white" />
+                <Card className="h-full overflow-hidden border-border/70 bg-card transition-transform duration-300 hover:-translate-y-1">
+                  <CardContent className="p-6">
+                    <div className={`mb-5 flex h-12 w-12 items-center justify-center rounded-md bg-gradient-to-br ${value.color} text-primary-foreground`}>
+                      <value.icon className="h-6 w-6" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-3">{value.title}</h3>
-                    <p className="text-muted-foreground">{value.description}</p>
+                    <h3 className="text-lg font-semibold text-foreground">{value.title}</h3>
+                    <p className="mt-2 leading-relaxed text-muted-foreground">{value.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -159,171 +170,64 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <WaveDivider fillClass="fill-background" flip />
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5" />
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Live Impact</span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Real Change, Measured Daily</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              These numbers update in real time as citizens like you report and resolve issues across India.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10">
-            <StatCard icon={TrendingUp} value={stats.issues} label="Issues Reported" gradient="from-cyan-500 to-blue-500" delay={0} />
-            <StatCard icon={CheckCircle2} value={stats.resolved} label="Issues Resolved" gradient="from-emerald-500 to-teal-500" delay={0.1} />
-            <StatCard icon={MapPin} value={stats.cities} label="Cities Covered" gradient="from-orange-500 to-pink-500" delay={0.2} />
-            <StatCard icon={Users2} value={stats.citizens} label="Active Citizens" gradient="from-violet-500 to-fuchsia-500" delay={0.3} />
+      <section className="border-y border-border/60 bg-muted/30 py-14">
+        <div className="container mx-auto grid gap-8 px-4 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <p className="mb-2 text-sm font-semibold uppercase text-primary">Civiscope in numbers</p>
+            <h2 className="font-display text-2xl font-bold text-foreground md:text-3xl">Progress starts with a report.</h2>
+            <p className="mt-2 max-w-xl text-muted-foreground">Live totals from issues currently visible to the platform.</p>
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="max-w-3xl mx-auto"
-          >
-            <Card className="bg-gradient-to-r from-primary/10 via-purple-500/10 to-pink-500/10 border-primary/30">
-              <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-4">
-                <div className="relative w-24 h-24 flex-shrink-0">
-                  <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="8" fill="none" className="text-muted opacity-20" />
-                    <motion.circle
-                      cx="50" cy="50" r="40" stroke="url(#grad)" strokeWidth="8" fill="none" strokeLinecap="round"
-                      strokeDasharray={251.2}
-                      initial={{ strokeDashoffset: 251.2 }}
-                      whileInView={{ strokeDashoffset: 251.2 - (251.2 * resolutionRate) / 100 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1.5, ease: 'easeOut' }}
-                    />
-                    <defs>
-                      <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="hsl(var(--primary))" />
-                        <stop offset="100%" stopColor="hsl(280 70% 60%)" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center font-bold text-xl">
-                    {resolutionRate}%
-                  </div>
-                </div>
-                <div className="text-center sm:text-left">
-                  <h3 className="font-semibold text-lg mb-1">Resolution Rate</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Of all reported issues are resolved through Civiscope's AI-powered routing — typically within <span className="text-primary font-medium">48 hours</span>.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="min-w-32 border-l-2 border-primary bg-background px-4 py-3">
+              <TrendingUp className="mb-2 h-5 w-5 text-primary" />
+              <p className="text-3xl font-bold tabular-nums text-foreground">{stats.issues.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground">Issues reported</p>
+            </div>
+            <div className="min-w-32 border-l-2 border-emerald-500 bg-background px-4 py-3">
+              <CheckCircle2 className="mb-2 h-5 w-5 text-emerald-600" />
+              <p className="text-3xl font-bold tabular-nums text-foreground">{resolutionRate}%</p>
+              <p className="text-sm text-muted-foreground">Marked resolved</p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* How It Works — Journey */}
-      <section className="py-20 bg-muted/30">
+      <section id="how-it-works" className="scroll-mt-24 py-16 md:py-20">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-14"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">From Report to Resolution</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Four simple steps. Powered by AI. Designed for impact.
-            </p>
-          </motion.div>
-
-          <div className="relative max-w-5xl mx-auto">
-            {/* Connecting line */}
-            <div className="hidden md:block absolute top-8 left-[12.5%] right-[12.5%] h-0.5 bg-gradient-to-r from-cyan-500/30 via-violet-500/30 to-emerald-500/30" />
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-              {journey.map((step, i) => (
-                <motion.div
-                  key={step.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.15 }}
-                  className="text-center relative"
-                >
-                  <motion.div
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${step.color} flex items-center justify-center mx-auto mb-4 shadow-xl relative z-10`}
-                  >
-                    <step.icon className="w-8 h-8 text-white" />
-                  </motion.div>
-                  <div className="text-xs font-mono text-primary mb-1">STEP {i + 1}</div>
-                  <h3 className="font-semibold text-lg mb-2">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground">{step.desc}</p>
-                </motion.div>
-              ))}
-            </div>
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <p className="mb-3 text-sm font-semibold uppercase text-primary">One connected journey</p>
+            <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">From the street to a clear update.</h2>
+            <p className="mt-4 leading-relaxed text-muted-foreground">A straightforward path keeps each report organized from the first detail to the final outcome.</p>
           </div>
-
-          {/* Key promise badges */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="flex flex-wrap items-center justify-center gap-3 mt-14"
-          >
-            {[
-              { icon: Clock, label: '48hr avg resolution' },
-              { icon: Brain, label: 'AI auto-routing' },
-              { icon: MapPin, label: '10 cities & growing' },
-              { icon: Sparkles, label: '100% transparent' },
-            ].map((b) => (
-              <div key={b.label} className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/80 backdrop-blur border border-border/50">
-                <b.icon className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">{b.label}</span>
-              </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map((step, index) => (
+              <motion.div
+                key={step.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ delay: index * 0.09, duration: 0.4 }}
+                className="relative border-t-2 border-primary/30 pt-5"
+              >
+                <span className="absolute -top-3 left-0 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">{index + 1}</span>
+                <step.icon className="mb-4 h-6 w-6 text-primary" />
+                <h3 className="font-semibold text-foreground">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.description}</p>
+              </motion.div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      <WaveDivider fillClass="fill-background" flip />
-
-      {/* CTA Section with premium buttons */}
-      <section className="py-20 bg-gradient-to-br from-primary/10 via-purple-500/10 to-pink-500/10 relative overflow-hidden">
-        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-primary/20 blur-3xl" />
-        <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-purple-500/20 blur-3xl" />
-
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              Join Us in Building a Better City
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto mb-10">
-              Together, we can create more responsive, transparent, and efficient urban communities.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
-              <Link to="/report" className="btn-shimmer">
-                <Sparkles className="w-4 h-4" />
-                Report an Issue
-              </Link>
-              <Link to="/track" className="btn-glow">
-                <MapPin className="w-4 h-4 text-primary" />
-                Track Live Issues
-              </Link>
-            </div>
-          </motion.div>
+      <section className="border-t border-border/60 bg-primary/5 py-14 md:py-16">
+        <div className="container mx-auto flex flex-col items-start justify-between gap-6 px-4 sm:flex-row sm:items-center">
+          <div className="max-w-2xl">
+            <h2 className="font-display text-2xl font-bold text-foreground md:text-3xl">Your neighborhood has a voice.</h2>
+            <p className="mt-2 text-muted-foreground">Help turn a local concern into a report that can be followed through.</p>
+          </div>
+          <Button asChild size="lg" className="shrink-0">
+            <Link to="/report">Start a report <ArrowRight aria-hidden="true" /></Link>
+          </Button>
         </div>
       </section>
     </Layout>
