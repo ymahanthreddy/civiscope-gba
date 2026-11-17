@@ -392,7 +392,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_officials: {
+        Row: {
+          created_at: string | null
+          department: string | null
+          id: string | null
+          name: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          department?: string | null
+          id?: string | null
+          name?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          department?: string | null
+          id?: string | null
+          name?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {

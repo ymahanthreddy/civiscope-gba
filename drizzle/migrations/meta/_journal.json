@@ -15,6 +15,13 @@
       "when": 1793283016169,
       "tag": "0001_worker_profile_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794923873325,
+      "tag": "0002_tighten_selected_public_access",
+      "breakpoints": true
     }
   ]
 }
