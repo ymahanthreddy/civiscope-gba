@@ -16,7 +16,7 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -24,41 +24,35 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Try to sign in first
-    let { error } = await signIn(email, password);
-
+    const { error } = await signIn(email, password);
     if (error) {
-      // Try signing up if login fails
-      const signUpResult = await signUp(email, password, 'Admin');
-      
-      if (signUpResult.error && !signUpResult.error.message.includes('already registered')) {
-        toast({
-          title: 'Login Failed',
-          description: signUpResult.error.message || 'Please try again.',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // Try signing in again after signup
-      const retryResult = await signIn(email, password);
-      if (retryResult.error) {
-        toast({
-          title: 'Login Failed',
-          description: 'Please try again in a moment.',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return;
-      }
+      toast({
+        title: 'Login Failed',
+        description: error.message || 'Check your email and password, then try again.',
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+      return;
     }
 
-    // Update the user's role to admin
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      // Update existing role to admin
-      await supabase.from('user_roles').update({ role: 'admin' }).eq('user_id', user.id);
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (!user || userError) {
+      await signOut();
+      toast({ title: 'Login Failed', description: 'We could not verify this account.', variant: 'destructive' });
+      setIsLoading(false);
+      return;
+    }
+
+    const { data: roles, error: roleError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id);
+
+    if (roleError || !roles?.some(({ role }) => role === 'admin')) {
+      await signOut();
+      toast({ title: 'Access denied', description: 'This account does not have administrator access.', variant: 'destructive' });
+      setIsLoading(false);
+      return;
     }
 
     toast({
@@ -126,12 +120,6 @@ export default function AdminLoginPage() {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-              </div>
-
-              <div className="bg-muted/50 rounded-lg p-3 text-sm">
-                <p className="font-medium text-foreground mb-1">Demo Credentials:</p>
-                <p className="text-muted-foreground">Email: <span className="font-mono text-foreground">admin@civiscope.com</span></p>
-                <p className="text-muted-foreground">Password: <span className="font-mono text-foreground">admin123</span></p>
               </div>
 
               <Button
