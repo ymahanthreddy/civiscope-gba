@@ -33,13 +33,19 @@ export function useSupabaseIssues() {
 
   const fetchOfficials = useCallback(async () => {
     const { data, error } = await supabase
-      .from('officials')
-      .select('*');
+      .from('public_officials')
+      .select('id, name, department, created_at');
 
     if (error) {
       console.error('Error fetching officials:', error);
     } else {
-      setOfficials(data || []);
+      setOfficials((data || []).map((official) => ({
+        id: official.id ?? '',
+        name: official.name ?? '',
+        department: official.department ?? '',
+        created_at: official.created_at ?? '',
+        email: null,
+      })));
     }
   }, []);
 

@@ -4,6 +4,7 @@ import { ImagePlus, X, Upload, Loader2, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ImageUploadProps {
   onImageUploaded: (url: string) => void;
@@ -11,6 +12,7 @@ interface ImageUploadProps {
 }
 
 export function ImageUpload({ onImageUploaded, currentImage }: ImageUploadProps) {
+  const { user } = useAuth();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(currentImage || null);
@@ -18,6 +20,15 @@ export function ImageUpload({ onImageUploaded, currentImage }: ImageUploadProps)
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(async (file: File) => {
+    if (!user) {
+      toast({
+        title: 'Sign in to attach a photo',
+        description: 'You can still report an issue without an image.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
@@ -52,7 +63,8 @@ export function ImageUpload({ onImageUploaded, currentImage }: ImageUploadProps)
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `issues/${fileName}`;
+      const uploadFolder = user?.id ?? 'anonymous';
+      const filePath = `${uploadFolder}/issues/${fileName}`;
 
       // Simulate progress
       const progressInterval = setInterval(() => {
@@ -84,18 +96,19 @@ export function ImageUpload({ onImageUploaded, currentImage }: ImageUploadProps)
         title: 'Image uploaded',
         description: 'Your image has been attached to the report',
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error('Upload error:', error);
       setPreview(null);
+      const message = error instanceof Error ? error.message : 'Failed to upload image. Please try again.';
       toast({
         title: 'Upload failed',
-        description: error.message || 'Failed to upload image. Please try again.',
+        description: message,
         variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
     }
-  }, [onImageUploaded]);
+  }, [onImageUploaded, user]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();

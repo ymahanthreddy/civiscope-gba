@@ -8,6 +8,7 @@ import { useIssues, Issue } from '@/contexts/IssueContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const categoryColors: Record<string, string> = {
   garbage: 'bg-amber-500',
@@ -21,6 +22,7 @@ const categoryColors: Record<string, string> = {
 export function LiveIssuesSection() {
   const { issues, refetch } = useIssues();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
 
   const recentIssues = issues
@@ -28,6 +30,12 @@ export function LiveIssuesSection() {
     .slice(0, 6);
 
   const handleLike = async (issueId: string) => {
+    if (!user) {
+      toast({ title: 'Sign in to support an issue', description: 'You can still report an issue without signing in.' });
+      navigate('/auth');
+      return;
+    }
+
     // Instant optimistic update
     setLikedIds(prev => new Set(prev).add(issueId));
     toast({ title: '❤️ Thanks for your support!' });
@@ -35,19 +43,15 @@ export function LiveIssuesSection() {
     // Background save - don't wait
     supabase.from('issue_likes').insert({
       issue_id: issueId,
-      user_id: user?.id || null,
-      user_name: user?.email?.split('@')[0] || 'Anonymous'
+      user_id: user.id,
+      user_name: user.email?.split('@')[0] || 'Resident'
     }).then(({ error }) => {
-      if (error?.code === '23505') {
-        toast({ title: 'Already supported', variant: 'destructive' });
+      if (error) {
+        toast({ title: 'Could not record your support', description: 'Please try again.', variant: 'destructive' });
         setLikedIds(prev => { const n = new Set(prev); n.delete(issueId); return n; });
       }
     });
 
-    supabase.from('issues').update({ 
-      likes_count: (issues.find(i => i.id === issueId)?.likes_count || 0) + 1 
-    }).eq('id', issueId);
-    
     setTimeout(() => refetch(), 500);
   };
 
@@ -69,7 +73,7 @@ export function LiveIssuesSection() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {recentIssues.map((issue, idx) => {
             const isLiked = likedIds.has(issue.id);
-            const displayCount = (issue.likes_count || 0) + (isLiked ? 1 : 0);
+            const displayCount = issue.likes_count || 0;
             
             return (
               <motion.div
